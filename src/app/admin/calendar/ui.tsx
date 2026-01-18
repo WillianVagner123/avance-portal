@@ -275,12 +275,11 @@ export default function CalendarClient({ mode, title, subtitle }: Props) {
     <>
       <style jsx global>{`
         /* ===== Page feel ===== */
-        :root { color-scheme: dark; }
         /* ===== FullCalendar Modern Skin ===== */
         .fc {
-          --fc-border-color: rgba(148, 163, 184, 0.16);
+          --fc-border-color: rgba(15, 23, 42, 0.10);
           --fc-page-bg-color: transparent;
-          --fc-today-bg-color: rgba(34, 197, 94, 0.12);
+          --fc-today-bg-color: rgba(244, 63, 94, 0.12);
           --fc-neutral-bg-color: rgba(15, 23, 42, 0.5);
           --fc-list-event-hover-bg-color: rgba(255,255,255,.06);
           font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
@@ -294,11 +293,11 @@ export default function CalendarClient({ mode, title, subtitle }: Props) {
           font-size: 18px;
           font-weight: 900;
           letter-spacing: -0.02em;
-          color: rgba(226, 232, 240, 0.95);
+          color: rgba(15, 23, 42, 0.92);
         }
         .fc .fc-button {
-          background: rgba(15, 23, 42, 0.8) !important;
-          border: 1px solid rgba(148, 163, 184, 0.22) !important;
+          background: rgba(255, 255, 255, 0.85) !important;
+          border: 1px solid rgba(15, 23, 42, 0.10) !important;
           color: rgba(226, 232, 240, 0.95) !important;
           border-radius: 12px !important;
           padding: 8px 12px !important;
@@ -307,7 +306,7 @@ export default function CalendarClient({ mode, title, subtitle }: Props) {
           text-transform: none !important;
         }
         .fc .fc-button:hover {
-          background: rgba(30, 41, 59, 0.92) !important;
+          background: rgba(255, 255, 255, 0.95) !important;
         }
         .fc .fc-button:disabled { opacity: .45 !important; }
         .fc .fc-daygrid-day-number,
@@ -322,6 +321,7 @@ export default function CalendarClient({ mode, title, subtitle }: Props) {
           font-weight: 800;
         }
         .fc .fc-event {
+          color: rgba(15,23,42,.95) !important;
           border-radius: 14px;
           padding: 2px 6px;
           border-width: 1px;
@@ -331,7 +331,7 @@ export default function CalendarClient({ mode, title, subtitle }: Props) {
         .fc .fc-timegrid-now-indicator-line { border-color: rgba(34,197,94,.9); }
       `}</style>
 
-      <div className="min-h-[calc(100vh-1px)] w-full bg-slate-950 text-slate-100">
+      <div className="min-h-[calc(100vh-1px)] w-full bg-transparent text-slate-900">
         <div className="mx-auto max-w-[1400px] px-4 py-5">
           {/* Header */}
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
@@ -339,13 +339,13 @@ export default function CalendarClient({ mode, title, subtitle }: Props) {
               <h1 className="text-2xl font-black tracking-tight">
                 {title || (mode === "admin" ? "Konsist Calendar" : "Meu Calendário")}
               </h1>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-slate-600">
                 {subtitle || "Agenda premium: filtros por médico, status e busca por paciente/procedimento."}
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <div className="rounded-full border border-slate-800 bg-slate-900 px-4 py-2 text-xs text-slate-300">
+              <div className="rounded-full border border-white/40 bg-white/70 px-4 py-2 text-xs text-slate-700">
                 <span className="opacity-70">Range:</span>{" "}
                 <span className="font-extrabold">{datai || "—"}</span>{" "}
                 <span className="opacity-60">→</span>{" "}
@@ -356,7 +356,7 @@ export default function CalendarClient({ mode, title, subtitle }: Props) {
                 onClick={carregar}
                 className={cx(
                   "rounded-full px-5 py-2 text-sm font-extrabold",
-                  "border border-slate-700 bg-slate-900 hover:bg-slate-800",
+                  "border border-slate-700 bg-white/70 hover:bg-white/80",
                   loading && "opacity-60"
                 )}
                 disabled={loading}
@@ -370,10 +370,10 @@ export default function CalendarClient({ mode, title, subtitle }: Props) {
           <div className="grid grid-cols-12 gap-4">
             {/* Sidebar */}
             <aside className="col-span-12 lg:col-span-3">
-              <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-3 shadow-[0_20px_60px_rgba(0,0,0,.35)] backdrop-blur">
+              <div className="rounded-3xl border border-white/40 bg-white/60 p-3 shadow-[0_20px_60px_rgba(0,0,0,.35)] backdrop-blur">
                 <div className="mb-3 flex items-center justify-between">
                   <div className="text-sm font-black">Painel</div>
-                  <div className="rounded-full border border-slate-700 bg-slate-950 px-3 py-1 text-xs font-extrabold text-slate-300">
+                  <div className="rounded-full border border-slate-700 bg-white/70 px-3 py-1 text-xs font-extrabold text-slate-700">
                     {mode === "admin" ? "ADMIN" : "PRO"}
                   </div>
                 </div>
@@ -390,8 +390,8 @@ export default function CalendarClient({ mode, title, subtitle }: Props) {
                       onClick={() => setTab(k as any)}
                       className={cx(
                         "rounded-2xl px-3 py-2 text-left text-sm font-extrabold",
-                        "border border-slate-800",
-                        tab === k ? "bg-slate-800" : "bg-slate-950 hover:bg-slate-800/60"
+                        "border border-white/40",
+                        tab === k ? "bg-white/80" : "bg-white/70 hover:bg-white/80/60"
                       )}
                     >
                       {label}
@@ -401,14 +401,14 @@ export default function CalendarClient({ mode, title, subtitle }: Props) {
 
                 {tab === "agenda" && (
                   <div className="space-y-2">
-                    <div className="rounded-2xl border border-slate-800 bg-slate-950 p-3">
-                      <div className="text-xs text-slate-400">Eventos</div>
-                      <div className="text-2xl font-black text-slate-100">{events.length}</div>
+                    <div className="rounded-2xl border border-white/40 bg-white/70 p-3">
+                      <div className="text-xs text-slate-600">Eventos</div>
+                      <div className="text-2xl font-black text-slate-900">{events.length}</div>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-800 bg-slate-950 p-3">
-                      <div className="text-xs text-slate-400 mb-1">Dica</div>
-                      <div className="text-sm text-slate-200">
+                    <div className="rounded-2xl border border-white/40 bg-white/70 p-3">
+                      <div className="text-xs text-slate-600 mb-1">Dica</div>
+                      <div className="text-sm text-slate-800">
                         Clique em um evento para abrir o detalhe premium.
                       </div>
                     </div>
@@ -417,43 +417,43 @@ export default function CalendarClient({ mode, title, subtitle }: Props) {
 
                 {tab === "filtros" && (
                   <div className="space-y-3">
-                    <div className="rounded-2xl border border-slate-800 bg-slate-950 p-3">
-                      <div className="mb-2 text-xs font-extrabold text-slate-300">Período</div>
+                    <div className="rounded-2xl border border-white/40 bg-white/70 p-3">
+                      <div className="mb-2 text-xs font-extrabold text-slate-700">Período</div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <div className="mb-1 text-xs text-slate-400">Início</div>
+                          <div className="mb-1 text-xs text-slate-600">Início</div>
                           <input
                             type="date"
                             value={datai}
                             onChange={(e) => setDatai(e.target.value)}
-                            className="w-full rounded-xl border border-slate-700 bg-slate-900 px-2 py-2 text-sm font-bold"
+                            className="w-full rounded-xl border border-slate-700 bg-white/70 px-2 py-2 text-sm font-bold"
                           />
                         </div>
                         <div>
-                          <div className="mb-1 text-xs text-slate-400">Fim</div>
+                          <div className="mb-1 text-xs text-slate-600">Fim</div>
                           <input
                             type="date"
                             value={dataf}
                             onChange={(e) => setDataf(e.target.value)}
-                            className="w-full rounded-xl border border-slate-700 bg-slate-900 px-2 py-2 text-sm font-bold"
+                            className="w-full rounded-xl border border-slate-700 bg-white/70 px-2 py-2 text-sm font-bold"
                           />
                         </div>
                       </div>
                       <button
                         onClick={carregar}
-                        className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm font-extrabold hover:bg-slate-800"
+                        className="mt-2 w-full rounded-xl border border-slate-700 bg-white/70 px-3 py-2 text-sm font-extrabold hover:bg-white/80"
                       >
                         Aplicar período
                       </button>
                     </div>
 
                     {mode === "admin" && (
-                      <div className="rounded-2xl border border-slate-800 bg-slate-950 p-3">
-                        <div className="mb-2 text-xs font-extrabold text-slate-300">Médico</div>
+                      <div className="rounded-2xl border border-white/40 bg-white/70 p-3">
+                        <div className="mb-2 text-xs font-extrabold text-slate-700">Médico</div>
                         <select
                           value={medico}
                           onChange={(e) => setMedico(e.target.value)}
-                          className="w-full rounded-xl border border-slate-700 bg-slate-900 px-2 py-2 text-sm font-bold"
+                          className="w-full rounded-xl border border-slate-700 bg-white/70 px-2 py-2 text-sm font-bold"
                         >
                           {medicos.map((m) => (
                             <option key={m} value={m}>{m === "ALL" ? "Todos" : m}</option>
@@ -462,12 +462,12 @@ export default function CalendarClient({ mode, title, subtitle }: Props) {
                       </div>
                     )}
 
-                    <div className="rounded-2xl border border-slate-800 bg-slate-950 p-3">
-                      <div className="mb-2 text-xs font-extrabold text-slate-300">Status</div>
+                    <div className="rounded-2xl border border-white/40 bg-white/70 p-3">
+                      <div className="mb-2 text-xs font-extrabold text-slate-700">Status</div>
                       <select
                         value={status}
                         onChange={(e) => setStatus(e.target.value)}
-                        className="w-full rounded-xl border border-slate-700 bg-slate-900 px-2 py-2 text-sm font-bold"
+                        className="w-full rounded-xl border border-slate-700 bg-white/70 px-2 py-2 text-sm font-bold"
                       >
                         {statuses.map((s) => (
                           <option key={s} value={s}>{s === "ALL" ? "Todos" : s}</option>
@@ -475,13 +475,13 @@ export default function CalendarClient({ mode, title, subtitle }: Props) {
                       </select>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-800 bg-slate-950 p-3">
-                      <div className="mb-2 text-xs font-extrabold text-slate-300">Busca</div>
+                    <div className="rounded-2xl border border-white/40 bg-white/70 p-3">
+                      <div className="mb-2 text-xs font-extrabold text-slate-700">Busca</div>
                       <input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Paciente / procedimento / médico..."
-                        className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm font-bold"
+                        className="w-full rounded-xl border border-slate-700 bg-white/70 px-3 py-2 text-sm font-bold"
                       />
                     </div>
                   </div>
@@ -489,13 +489,13 @@ export default function CalendarClient({ mode, title, subtitle }: Props) {
 
                 {tab === "status" && (
                   <div className="space-y-2">
-                    <div className="text-xs text-slate-400">Cores por status (editável em statusColor)</div>
+                    <div className="text-xs text-slate-600">Cores por status (editável em statusColor)</div>
                     {statuses.filter(s => s !== "ALL").slice(0, 12).map((s) => (
                       <div
                         key={s}
-                        className="flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-950 p-3"
+                        className="flex items-center justify-between rounded-2xl border border-white/40 bg-white/70 p-3"
                       >
-                        <div className="text-sm font-extrabold text-slate-200">{s}</div>
+                        <div className="text-sm font-extrabold text-slate-800">{s}</div>
                         <div className="h-4 w-10 rounded-lg" style={{ background: statusColor(s) }} />
                       </div>
                     ))}
@@ -511,14 +511,14 @@ export default function CalendarClient({ mode, title, subtitle }: Props) {
                   <div className="space-y-2">
                     <button
                       onClick={() => { setMedico("ALL"); setStatus("ALL"); setSearch(""); }}
-                      className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-3 py-3 text-sm font-extrabold hover:bg-slate-800"
+                      className="w-full rounded-2xl border border-slate-700 bg-white/70 px-3 py-3 text-sm font-extrabold hover:bg-white/80"
                     >
                       Limpar filtros
                     </button>
 
                     <button
                       onClick={() => console.log("RAW:", raw)}
-                      className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-3 py-3 text-sm font-extrabold hover:bg-slate-800"
+                      className="w-full rounded-2xl border border-slate-700 bg-white/70 px-3 py-3 text-sm font-extrabold hover:bg-white/80"
                     >
                       Debug (console): RAW
                     </button>
@@ -530,12 +530,12 @@ export default function CalendarClient({ mode, title, subtitle }: Props) {
             {/* Main */}
             <section className="col-span-12 lg:col-span-9">
               {error && (
-                <div className="mb-3 rounded-3xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-bold text-red-200">
+                <div className="mb-3 rounded-3xl border border-red-300 bg-red-100 px-4 py-3 text-sm font-bold text-red-700">
                   ❌ {error}
                 </div>
               )}
 
-              <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-3 shadow-[0_20px_60px_rgba(0,0,0,.35)] backdrop-blur">
+              <div className="rounded-3xl border border-white/40 bg-white/60 p-3 shadow-[0_20px_60px_rgba(0,0,0,.35)] backdrop-blur">
                 <div className="h-[72vh] w-full">
                   <FullCalendar
                     plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -567,21 +567,21 @@ export default function CalendarClient({ mode, title, subtitle }: Props) {
               onClick={() => setOpen(false)}
             >
               <div
-                className="w-full max-w-[720px] rounded-3xl border border-slate-700 bg-slate-950 p-4 shadow-[0_30px_120px_rgba(0,0,0,.55)]"
+                className="w-full max-w-[720px] rounded-3xl border border-slate-700 bg-white/70 p-4 shadow-[0_30px_120px_rgba(0,0,0,.55)]"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="text-xs font-extrabold text-slate-400">DETALHE DO AGENDAMENTO</div>
+                    <div className="text-xs font-extrabold text-slate-600">DETALHE DO AGENDAMENTO</div>
                     <div className="text-xl font-black">{selected?.paciente || "Paciente"}</div>
-                    <div className="text-sm text-slate-300">
+                    <div className="text-sm text-slate-700">
                       {selected?.procedimento || "—"}{" "}
                       {selected?.codigoProcedimento ? `(${selected.codigoProcedimento})` : ""}
                     </div>
                   </div>
 
                   <button
-                    className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-extrabold hover:bg-slate-800"
+                    className="rounded-full border border-slate-700 bg-white/70 px-4 py-2 text-sm font-extrabold hover:bg-white/80"
                     onClick={() => setOpen(false)}
                   >
                     Fechar
@@ -589,59 +589,59 @@ export default function CalendarClient({ mode, title, subtitle }: Props) {
                 </div>
 
                 <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3">
-                    <div className="text-xs text-slate-400">Status</div>
+                  <div className="rounded-2xl border border-white/40 bg-white/70/60 p-3">
+                    <div className="text-xs text-slate-600">Status</div>
                     <div className="mt-1 inline-flex items-center gap-2">
                       <span
                         className="inline-block h-3 w-3 rounded-full"
                         style={{ background: statusColor(String(selected?.status || "")) }}
                       />
-                      <span className="text-sm font-extrabold text-slate-100">{selected?.status || "—"}</span>
+                      <span className="text-sm font-extrabold text-slate-900">{selected?.status || "—"}</span>
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3">
-                    <div className="text-xs text-slate-400">Médico / Especialidade</div>
-                    <div className="mt-1 text-sm font-extrabold text-slate-100">
+                  <div className="rounded-2xl border border-white/40 bg-white/70/60 p-3">
+                    <div className="text-xs text-slate-600">Médico / Especialidade</div>
+                    <div className="mt-1 text-sm font-extrabold text-slate-900">
                       {selected?.medico || "—"}
                     </div>
-                    <div className="text-xs text-slate-400">{selected?.especialidade || ""}</div>
+                    <div className="text-xs text-slate-600">{selected?.especialidade || ""}</div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3">
-                    <div className="text-xs text-slate-400">Unidade</div>
-                    <div className="mt-1 text-sm font-extrabold text-slate-100">
+                  <div className="rounded-2xl border border-white/40 bg-white/70/60 p-3">
+                    <div className="text-xs text-slate-600">Unidade</div>
+                    <div className="mt-1 text-sm font-extrabold text-slate-900">
                       {selected?.unidade || "—"}
                     </div>
-                    <div className="text-xs text-slate-400">{selected?.endereco || ""}</div>
+                    <div className="text-xs text-slate-600">{selected?.endereco || ""}</div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3">
-                    <div className="text-xs text-slate-400">Contato</div>
-                    <div className="mt-1 text-sm font-extrabold text-slate-100">
+                  <div className="rounded-2xl border border-white/40 bg-white/70/60 p-3">
+                    <div className="text-xs text-slate-600">Contato</div>
+                    <div className="mt-1 text-sm font-extrabold text-slate-900">
                       {selected?.telefonePaciente || "—"}
                     </div>
-                    <div className="text-xs text-slate-400">
+                    <div className="text-xs text-slate-600">
                       Unidade: {selected?.telefoneUnidade || "—"}
                     </div>
                   </div>
 
-                  <div className="md:col-span-2 rounded-2xl border border-slate-800 bg-slate-900/60 p-3">
-                    <div className="text-xs text-slate-400">Preparo</div>
-                    <div className="mt-1 text-sm font-bold text-slate-100 whitespace-pre-wrap">
+                  <div className="md:col-span-2 rounded-2xl border border-white/40 bg-white/70/60 p-3">
+                    <div className="text-xs text-slate-600">Preparo</div>
+                    <div className="mt-1 text-sm font-bold text-slate-900 whitespace-pre-wrap">
                       {selected?.preparo || "—"}
                     </div>
                   </div>
                 </div>
 
                 {!!selected?.marcacao?.length && (
-                  <div className="mt-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-3">
-                    <div className="text-xs text-slate-400 mb-2">Marcação</div>
+                  <div className="mt-3 rounded-2xl border border-white/40 bg-white/70/60 p-3">
+                    <div className="text-xs text-slate-600 mb-2">Marcação</div>
                     <div className="flex flex-wrap gap-2">
                       {selected.marcacao.map((m: any, i: number) => (
                         <span
                           key={i}
-                          className="rounded-full border border-slate-700 bg-slate-950 px-3 py-1 text-xs font-extrabold text-slate-200"
+                          className="rounded-full border border-slate-700 bg-white/70 px-3 py-1 text-xs font-extrabold text-slate-800"
                         >
                           {m?.descricao || m?.codigo || "—"}
                         </span>

@@ -4,10 +4,12 @@ import CalendarClient from "./ui";
 
 export default function AdminCalendarPage() {
   return (
-    <CalendarClient
-      mode="admin"
-      title="Calendário (Konsist) — Admin"
-      subtitle="Agenda interativa com filtros por profissional / paciente / status e cores por status."
-    />
+    <div className="min-h-screen bg-gradient-to-br from-rose-100 via-pink-100 to-rose-200">
+      <CalendarClient
+        mode="admin"
+        title="Calendário (Konsist)"
+        subtitle="Agenda interativa com filtros e detalhe por agendamento."
+      />
+    </div>
   );
 }
