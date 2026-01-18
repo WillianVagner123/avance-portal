@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-const PUBLIC_PREFIXES = ["/login", "/pending", "/logout", "/api/auth", "/favicon.ico"];
+const PUBLIC_PREFIXES = ["/login", "/pending", "/logout", "/api/auth", "/favicon.ico", "/api/google/sync"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;

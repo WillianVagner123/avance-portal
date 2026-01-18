@@ -7,6 +7,19 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+          scope: [
+            "openid",
+            "email",
+            "profile",
+            "https://www.googleapis.com/auth/calendar.readonly",
+          ].join(" "),
+        },
+      },
     }),
   ],
   pages: { signIn: "/login", error: "/login" },
@@ -45,39 +58,77 @@ export const authOptions: NextAuthOptions = {
       }
 
       if (email !== masterEmail) {
-        const pending = await prisma.accessRequest.findFirst({
-          where: { email, status: "PENDING" },
-        });
-
+        const pending = await prisma.accessRequest.findFirst({ where: { email, status: "PENDING" } });
         if (!pending && user.status === "PENDING") {
-          await prisma.accessRequest.create({
-            data: { email, name, status: "PENDING", userId: user.id },
-          });
+          await prisma.accessRequest.create({ data: { email, name, status: "PENDING", userId: user.id } });
         }
       }
 
       return true;
     },
 
-    async jwt({ token }) {
+    async jwt({ token, account }) {
       const email = (token.email || "").toString().toLowerCase();
+
       if (email) {
         const user = await prisma.user.findUnique({ where: { email } });
         if (user) {
-          (token as any).userId = user.id;
           (token as any).role = user.role;
           (token as any).status = user.status;
+          (token as any).userId = user.id;
         }
       }
+
+      if (account?.provider === "google" && account.access_token && email) {
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (user) {
+          await prisma.googleCalendarLink.upsert({
+            where: { userId: user.id },
+            create: {
+              userId: user.id,
+              accessToken: account.access_token || null,
+              refreshToken: (account.refresh_token as any) || null,
+              expiryDate: account.expires_at ? new Date(account.expires_at * 1000) : null,
+              approved: false,
+            },
+            update: {
+              accessToken: account.access_token || null,
+              refreshToken: (account.refresh_token as any) || undefined,
+              expiryDate: account.expires_at ? new Date(account.expires_at * 1000) : null,
+            },
+          });
+        }
+      }
+
       return token;
     },
 
-    async session({ session, token }) {
-      (session as any).appUser = {
-        id: (token as any).userId || null,
-        role: (token as any).role || "PROFESSIONAL",
-        status: (token as any).status || "PENDING",
-      };
+    async session({ session }) {
+      const email = (session.user?.email || "").toLowerCase();
+      if (!email) return session;
+
+      const user = await prisma.user.findUnique({ where: { email } });
+      const link = user
+        ? await prisma.googleCalendarLink.findUnique({ where: { userId: user.id } }).catch(() => null)
+        : null;
+
+      (session as any).appUser = user
+        ? {
+            id: user.id,
+            status: user.status,
+            role: user.role,
+            konsistMedicoNome: user.konsistMedicoNome,
+            googleCalendar: link
+              ? {
+                  approved: link.approved,
+                  calendarId: link.calendarId,
+                  calendarName: link.calendarName,
+                  hasRefreshToken: !!link.refreshToken,
+                }
+              : null,
+          }
+        : { status: "PENDING", role: "PROFESSIONAL" };
+
       return session;
     },
   },

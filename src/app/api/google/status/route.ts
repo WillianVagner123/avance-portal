@@ -1,12 +1,22 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
-// ✅ Stub: depois você troca pra ler do Prisma (refresh_token salvo)
 export async function GET() {
   const session: any = await getServerSession(authOptions);
-  if (!session?.user?.email) return NextResponse.json({ linked: false });
+  const appUser = session?.appUser;
 
-  // enquanto não persistir, retorna false (mas não dá 404)
-  return NextResponse.json({ linked: false });
+  if (!session?.user?.email || !appUser?.id) {
+    return NextResponse.json({ linked: false, approved: false });
+  }
+
+  const link = await prisma.googleCalendarLink.findUnique({ where: { userId: appUser.id } });
+
+  return NextResponse.json({
+    linked: !!link?.refreshToken,
+    approved: !!link?.approved,
+    calendarId: link?.calendarId || null,
+    calendarName: link?.calendarName || null,
+  });
 }
