@@ -59,24 +59,44 @@ model AccessRequest {
 }
 
 model GoogleCalendarLink {
-  id            String   @id @default(cuid())
-  userId        String   @unique
-  user          User     @relation(fields: [userId], references: [id])
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  accessToken  String?
+  refreshToken String?
+  expiryDate   DateTime?
+  approved     Boolean  @default(false)
+  calendarId   String?
+  calendarName String?
+  syncToken    String?   // ✅ incremental sync
+  approvedAt   DateTime?
+  approvedById String?
 
-  calendarId    String?
-  calendarName  String?
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  approved      Boolean  @default(false)
-  approvedBy    String?
-  approvedAt    DateTime?
-
-  accessToken   String?
-  refreshToken  String?
-  expiryDate    DateTime?
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
+
+model GoogleCalendarEvent {
+  id           String   @id @default(cuid())npx prisma db push
+
+  userId       String
+  googleEventId String
+  calendarId   String
+  status       String?
+  summary      String?
+  start        DateTime?
+  end          DateTime?
+  updated      DateTime?
+  raw          Json?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, googleEventId], name: "userId_googleEventId")
+  createdAt DateTime @default(now())
+  updatedAt2 DateTime @updatedAt
+}
+
 
 model KonsistProfessionalMap {
   id                      String   @id @default(cuid())

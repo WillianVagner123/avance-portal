@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "prisma generate && next start",
     "lint": "eslint",
-    "prisma:generate": "prisma generate"
+    "prisma:generate": "prisma generate",
+    "postinstall": "node -e \"const {execSync}=require('child_process'); if(process.env.DATABASE_URL){ console.log('postinstall: prisma generate'); execSync('npx prisma generate',{stdio:'inherit'}); } else { console.log('postinstall: skipping prisma generate (no DATABASE_URL)'); }\""
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.20",

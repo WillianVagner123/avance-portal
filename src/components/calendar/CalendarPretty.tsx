@@ -428,9 +428,7 @@ function ProgressBar({
 
 export default function CalendarPretty({ mode, title, subtitle }: Props) {
   const mainRef = useRef<FullCalendar | null>(null);
-    mainRef.current?.getApi().gotoDate(d);
-
-
+  
   const [tab, setTab] = useState<"agenda" | "filtros" | "status">("agenda");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
