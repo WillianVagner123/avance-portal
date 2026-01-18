@@ -1,11 +1,15 @@
+"use client";
+
 import CalendarPretty from "@/components/calendar/CalendarPretty";
 
 export default function AdminCalendarPage() {
   return (
-    <CalendarPretty
-      mode="admin"
-      title="Agenda Geral"
-      subtitle="Visão administrativa"
-    />
+    <div className="h-screen w-full overflow-hidden">
+      <CalendarPretty
+        mode="admin"
+        title="Agenda Geral"
+        subtitle="Visão administrativa"
+      />
+    </div>
   );
 }
