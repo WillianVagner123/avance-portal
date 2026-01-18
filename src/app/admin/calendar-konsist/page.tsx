@@ -1,13 +1,11 @@
-export const runtime = "nodejs";
-
-import CalendarPretty from "./CalendarPretty";
+import CalendarPretty from "@/components/calendar/CalendarPretty";
 
 export default function AdminCalendarPage() {
   return (
     <CalendarPretty
       mode="admin"
-      title="Calendário — Admin"
-      subtitle="Agenda do dia (Konsist) com filtros e resumo por status."
+      title="Agenda Geral"
+      subtitle="Visão administrativa"
     />
   );
 }

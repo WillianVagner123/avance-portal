@@ -381,7 +381,7 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
     try {
       for (let i = 0; i <= totalDias; i += step) {
         const di = toISODate(addDays(start, i));
-        const df = toISODate(addDays(start, Math.min(i + step - 1, totalDias)));
+        const df = toISODate(addDays(start, Math.min(i + step - 1 - 1, totalDias)));
 
         const key = `${di}_${df}_${prof}_${status}_${(search || "").trim().toLowerCase()}`;
         if (chunks[key]) continue;
@@ -439,11 +439,11 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
   async function prefetch30Dias() {
     const start = new Date();
     const totalDias = 30;
-    const step = 3;
+    const step = 4;
 
     for (let i = 0; i < totalDias; i += step) {
       const di = toISODate(addDays(start, i));
-      const df = toISODate(addDays(start, Math.min(i + step, totalDias)));
+      const df = toISODate(addDays(start, Math.min(i + step - 1, totalDias)));
 
       const key = `${di}_${df}_${prof}_${status}_${(search || "").trim().toLowerCase()}`;
       if (chunks[key]) continue;
@@ -480,12 +480,6 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
       }
     }
   }
-
-  useEffect(() => {
-    if (!datai || !dataf) return;
-    carregarJanelaAtual();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datai, dataf]);
 
   const professionals = useMemo(() => {
     const set = new Set<string>();
