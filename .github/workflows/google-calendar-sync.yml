@@ -14,5 +14,11 @@ jobs:
     steps:
       - name: Call Google Sync Endpoint
         run: |
-          curl -s -X POST "$SYNC_URL" \
-            -H "x-sync-secret: $SYNC_SECRET" >/dev/null
+          if [ -z "$SYNC_URL" ]; then
+            echo "ERROR: SYNC_URL is empty. Configure repo secret SYNC_URL."
+            exit 1
+          fi
+
+          echo "Calling: $SYNC_URL"
+          curl -fsS -X POST "$SYNC_URL" \
+            -H "x-sync-secret: $SYNC_SECRET"

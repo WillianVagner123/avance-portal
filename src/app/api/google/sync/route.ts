@@ -8,26 +8,29 @@ function mustEnv(name: string) {
   return v;
 }
 
-async function getAccessTokenFromRefresh(refreshToken: string) {
-  const oauth2 = new google.auth.OAuth2(
+function makeOAuthClient() {
+  // Usa o NEXTAUTH_URL como base (Cloud Run)
+  const baseUrl = mustEnv("NEXTAUTH_URL").replace(/\/$/, "");
+  const redirectUri = `${baseUrl}/api/auth/callback/google`;
+
+  return new google.auth.OAuth2(
     mustEnv("GOOGLE_CLIENT_ID"),
     mustEnv("GOOGLE_CLIENT_SECRET"),
-    mustEnv("GOOGLE_REDIRECT_URI") // ex: https://SEU_DOMINIO/api/auth/callback/google
+    redirectUri
   );
-
-  oauth2.setCredentials({ refresh_token: refreshToken });
-  const { token } = await oauth2.getAccessToken();
-  if (!token) throw new Error("No access token from refresh");
-  return token;
 }
 
 export async function POST(req: Request) {
-  const secret = req.headers.get("x-sync-secret");
-  if (secret !== process.env.SYNC_SECRET) {
+  const headerSecret =
+    req.headers.get("x-sync-secret") ||
+    req.headers.get("authorization")?.replace("Bearer ", "");
+
+  const envSecret = process.env.SYNC_SECRET?.trim();
+
+  if (!headerSecret || !envSecret || headerSecret.trim() !== envSecret) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
-  // ✅ pega todos os profissionais aprovados com refresh_token
   const links = await prisma.googleCalendarLink.findMany({
     where: {
       approved: true,
@@ -44,31 +47,33 @@ export async function POST(req: Request) {
   });
 
   const results: any[] = [];
+  const cal = google.calendar("v3");
 
   for (const link of links) {
     try {
-      const accessToken = await getAccessTokenFromRefresh(link.refreshToken!);
+      const oauth2 = makeOAuthClient();
+      oauth2.setCredentials({ refresh_token: link.refreshToken! });
 
-      const cal = google.calendar("v3");
       const res = await cal.events.list({
         calendarId: link.calendarId!,
-        auth: accessToken,
+        auth: oauth2, // ✅ correto
         singleEvents: true,
         orderBy: "startTime",
         maxResults: 2500,
-        // ✅ incremental: se existir syncToken, usa; senão faz full (limitado)
         syncToken: link.syncToken || undefined,
-        timeMin: link.syncToken ? undefined : new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(), // 30 dias atrás
-        timeMax: link.syncToken ? undefined : new Date(Date.now() + 1000 * 60 * 60 * 24 * 60).toISOString(), // 60 dias à frente
+        timeMin: link.syncToken
+          ? undefined
+          : new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(),
+        timeMax: link.syncToken
+          ? undefined
+          : new Date(Date.now() + 1000 * 60 * 60 * 24 * 60).toISOString(),
       });
 
       const items = res.data.items || [];
       const nextSyncToken = res.data.nextSyncToken || null;
 
-      // ✅ grava/atualiza eventos no banco (tabela: GoogleCalendarEvent)
-      // Se você ainda não tem, eu te passo o Prisma model logo abaixo.
       for (const ev of items) {
-        const evId = ev.id || null;
+        const evId = ev.id;
         if (!evId) continue;
 
         const start = (ev.start?.dateTime || ev.start?.date || null) as string | null;
@@ -99,7 +104,6 @@ export async function POST(req: Request) {
         });
       }
 
-      // ✅ salva syncToken pra próxima execução ser incremental
       await prisma.googleCalendarLink.update({
         where: { id: link.id },
         data: { syncToken: nextSyncToken },
@@ -107,11 +111,16 @@ export async function POST(req: Request) {
 
       results.push({ linkId: link.id, ok: true, events: items.length });
     } catch (e: any) {
-      // se o syncToken expirar, apaga pra forçar full no próximo run
       const msg = String(e?.message || e);
-      if (msg.includes("Sync token is no longer valid")) {
-        await prisma.googleCalendarLink.update({ where: { id: link.id }, data: { syncToken: null } });
+
+      // ✅ token inválido normalmente vem como 410
+      if (msg.includes("Sync token is no longer valid") || msg.includes("410")) {
+        await prisma.googleCalendarLink.update({
+          where: { id: link.id },
+          data: { syncToken: null },
+        });
       }
+
       results.push({ linkId: link.id, ok: false, error: msg });
     }
   }

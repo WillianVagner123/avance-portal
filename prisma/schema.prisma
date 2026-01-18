@@ -1,11 +1,9 @@
 generator client {
-  provider   = "prisma-client-js"
-  engineType = "binary"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  // Prisma 7: sem url aqui. URL fica no prisma.config.ts
+  provider = "postgresql"
 }
 
 enum UserStatus {
@@ -32,7 +30,6 @@ model User {
 
   accessRequests AccessRequest[]
 
-  // relações inversas
   googleCalendarLink     GoogleCalendarLink?
   konsistProfessionalMap KonsistProfessionalMap?
   googleCalendarEvents   GoogleCalendarEvent[]
@@ -68,7 +65,7 @@ model GoogleCalendarLink {
   approved     Boolean   @default(false)
   calendarId   String?
   calendarName String?
-  syncToken    String? // ✅ incremental sync
+  syncToken    String?
   approvedAt   DateTime?
   approvedById String?
 
