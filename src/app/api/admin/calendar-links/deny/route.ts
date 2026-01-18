@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 
   await prisma.googleCalendarLink.update({
     where: { userId },
-    data: { approved: false, approvedBy: actorEmail, approvedAt: new Date() },
+    data: { approved: false },
   });
 
   return NextResponse.redirect(new URL("/admin/calendar-links", req.url));

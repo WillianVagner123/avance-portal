@@ -29,7 +29,7 @@ export async function POST(req: Request) {
 
     await tx.googleCalendarLink.update({
       where: { userId },
-      data: { approved: true, approvedBy: actorEmail, approvedAt: new Date() },
+      data: { approved: true },
     });
   });
 
