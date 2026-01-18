@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-  "dev": "next dev",
-  "build": "next build",
-  "start": "prisma migrate deploy && next start -p ${PORT:-8080} -H 0.0.0.0"
-},
+    "dev": "next dev",
+    "build": "next build",
+    "start": "npx prisma generate && next start -p 8080 -H 0.0.0.0"
+  },
   "dependencies": {
     "@fullcalendar/core": "^6.1.20",
     "@fullcalendar/daygrid": "^6.1.20",
