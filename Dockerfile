@@ -1,36 +1,19 @@
-# ========================
-# BUILD STAGE
-# ========================
-FROM node:20-slim AS builder
-
-# deps para node-gyp
-RUN apt-get update && apt-get install -y \
-  python3 \
-  make \
-  g++ \
-  && rm -rf /var/lib/apt/lists/*
-
+FROM node:20-slim AS base
 WORKDIR /app
 
+# deps
 COPY package*.json ./
-
 RUN npm install --omit=optional
 
+# app
 COPY . .
 
-RUN npx prisma generate || echo "Prisma generate skipped"
+# prisma (schema já está aqui)
+RUN npx prisma generate
+
+# build next
 RUN npm run build
 
-# ========================
-# RUNTIME STAGE
-# ========================
-FROM node:20-slim
-
-WORKDIR /app
 ENV NODE_ENV=production
-
-COPY --from=builder /app ./
-
 EXPOSE 8080
-
-CMD ["npm", "run", "start"]
+CMD ["npm","run","start"]
