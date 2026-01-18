@@ -27,14 +27,15 @@ model User {
   role              UserRole   @default(PROFESSIONAL)
   konsistMedicoNome String?
 
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  accessRequests    AccessRequest[]
+  accessRequests AccessRequest[]
 
   // relações inversas
   googleCalendarLink     GoogleCalendarLink?
   konsistProfessionalMap KonsistProfessionalMap?
+  googleCalendarEvents   GoogleCalendarEvent[]
 }
 
 enum RequestStatus {
@@ -44,30 +45,30 @@ enum RequestStatus {
 }
 
 model AccessRequest {
-  id         String        @id @default(cuid())
-  email      String
-  name       String?
-  status     RequestStatus @default(PENDING)
+  id     String        @id @default(cuid())
+  email  String
+  name   String?
+  status RequestStatus @default(PENDING)
 
   reviewedBy String?
   reviewedAt DateTime?
 
-  userId     String?
-  user       User?         @relation(fields: [userId], references: [id])
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
 
-  createdAt  DateTime      @default(now())
+  createdAt DateTime @default(now())
 }
 
 model GoogleCalendarLink {
-  id           String   @id @default(cuid())
-  userId       String   @unique
+  id           String    @id @default(cuid())
+  userId       String    @unique
   accessToken  String?
   refreshToken String?
   expiryDate   DateTime?
-  approved     Boolean  @default(false)
+  approved     Boolean   @default(false)
   calendarId   String?
   calendarName String?
-  syncToken    String?   // ✅ incremental sync
+  syncToken    String? // ✅ incremental sync
   approvedAt   DateTime?
   approvedById String?
 
@@ -78,34 +79,33 @@ model GoogleCalendarLink {
 }
 
 model GoogleCalendarEvent {
-  id           String   @id @default(cuid())npx prisma db push
+  id String @id @default(cuid())
 
-  userId       String
+  userId        String
   googleEventId String
-  calendarId   String
-  status       String?
-  summary      String?
-  start        DateTime?
-  end          DateTime?
-  updated      DateTime?
-  raw          Json?
+  calendarId    String
+  status        String?
+  summary       String?
+  start         DateTime?
+  end           DateTime?
+  updated       DateTime?
+  raw           Json?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt2 DateTime @updatedAt
 
   @@unique([userId, googleEventId], name: "userId_googleEventId")
-  createdAt DateTime @default(now())
-  updatedAt2 DateTime @updatedAt
 }
 
-
 model KonsistProfessionalMap {
-  id                      String   @id @default(cuid())
-  userId                  String   @unique
-  user                    User     @relation(fields: [userId], references: [id])
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
 
   konsistProfissionalNome String
   konsistProfissionalId   String?
 
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
