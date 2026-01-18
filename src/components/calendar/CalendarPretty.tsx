@@ -428,7 +428,6 @@ function ProgressBar({
 
 export default function CalendarPretty({ mode, title, subtitle }: Props) {
   const mainRef = useRef<FullCalendar | null>(null);
-    ...
     mainRef.current?.getApi().gotoDate(d);
 
 
@@ -719,6 +718,7 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
   return (
     <>
      <style jsx global>{`
+
   .fc {
     --fc-border-color: rgba(148, 163, 184, 0.12);
     --fc-page-bg-color: transparent;
@@ -759,6 +759,7 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
     box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25) !important;
     cursor: pointer;
   }
+
 `}</style>
 
       {hover && <HoverCard data={hover} />}
