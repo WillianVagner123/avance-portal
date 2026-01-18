@@ -9,7 +9,7 @@ export default async function AdminCalendarLinksPage() {
   });
 
   const maps = await prisma.konsistProfessionalMap.findMany();
-  const mapByUserId = new Map(maps.map((m) => [m.userId, m]));
+  const mapByUserId = new Map(maps.map((m: (typeof maps)[number]) => [m.userId, m]));
 
   return (
     <div>
