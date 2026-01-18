@@ -1,18 +1,16 @@
-FROM node:20-slim AS base
+FROM node:20-slim
 WORKDIR /app
 
-# deps
 COPY package*.json ./
 RUN npm ci
 
-# app
 COPY . .
 
-# prisma (schema já está aqui)
-ARG DATABASE_URL="file:/tmp/build.db"
-ENV DATABASE_URL=$DATABASE_URL
+# Prisma 7 lê DATABASE_URL pelo prisma.config.ts (env). Para gerar o client no build,
+# basta uma URL *válida* (não precisa conectar).
+ENV DATABASE_URL="postgresql://user:pass@localhost:5432/db?schema=public"
 
-# build next
+# gera Prisma Client no build (via postinstall) e builda o Next
 RUN npm run build
 
 ENV NODE_ENV=production
