@@ -19,7 +19,7 @@ export default async function AdminCalendarLinksPage() {
       </p>
 
       <div style={{ display: "grid", gap: 12 }}>
-        {links.map((l) => {
+        {links.map((l: any) => {
           const m = mapByUserId.get(l.userId);
           return (
             <div

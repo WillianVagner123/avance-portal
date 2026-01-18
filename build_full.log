@@ -1,0 +1,580 @@
+/usr/bin/../lib/google-cloud-sdk/lib/third_party/google/cloud/__init__.py:20: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/bin/../lib/google-cloud-sdk/lib/third_party/google/cloud/appengine_v1alpha/proto/version_pb2.py:1659: SyntaxWarning: invalid escape sequence '\ '
+  '__doc__': """\ `Cloud Endpoints <https://cloud.google.com/endpoints>`__
+/usr/bin/../lib/google-cloud-sdk/lib/third_party/google/cloud/appengine_v1alpha/proto/app_yaml_pb2.py:991: SyntaxWarning: invalid escape sequence '\ '
+  \ ``30x`` code to use when performing redirects for the
+--------------------- REMOTE BUILD OUTPUT ----------------------
+starting build "c4e41f1c-8efc-4ae8-8979-8c33bcc9f564"
+FETCHSOURCE
+Fetching storage object: gs://run-sources-avance-portal-prod-br-southamerica-east1/services/avance-portal/1768752234.900399-93c4b109e15449a0aec2aa8077aa4ce7.zip#1768752235861635
+Copying gs://run-sources-avance-portal-prod-br-southamerica-east1/services/avance-portal/1768752234.900399-93c4b109e15449a0aec2aa8077aa4ce7.zip#1768752235861635...
+/ [0 files][    0.0 B/183.0 KiB]                                                / [1 files][183.0 KiB/183.0 KiB]
+Operation completed over 1 objects/183.0 KiB.
+Archive:  /tmp/source-archive.zip
+   creating: /workspace/.github/
+   creating: /workspace/prisma/
+   creating: /workspace/_app_old/
+   creating: /workspace/public/
+   creating: /workspace/scripts/
+   creating: /workspace/src/
+   creating: /workspace/.github/workflows/
+   creating: /workspace/prisma/migrations/
+   creating: /workspace/prisma/migrations/20260117230920_add_audit_log/
+   creating: /workspace/prisma/migrations/20260117234546_add_google_calendar_link/
+   creating: /workspace/prisma/migrations/20260117230310_npx_prisma_migrate_devnpx_prisma_generate/
+   creating: /workspace/prisma/migrations/20260118004450_init_fix/
+   creating: /workspace/_app_old/api/
+   creating: /workspace/_app_old/api/google/
+   creating: /workspace/_app_old/api/google/status/
+   creating: /workspace/_app_old/api/google/connect/
+   creating: /workspace/src/components/
+   creating: /workspace/src/lib/
+   creating: /workspace/src/app/
+   creating: /workspace/src/components/calendar/
+   creating: /workspace/src/lib/ui/
+   creating: /workspace/src/app/patient/
+   creating: /workspace/src/app/logout/
+   creating: /workspace/src/app/api/
+   creating: /workspace/src/app/professional/
+   creating: /workspace/src/app/login/
+   creating: /workspace/src/app/settings/
+   creating: /workspace/src/app/dashboard/
+   creating: /workspace/src/app/pending/
+   creating: /workspace/src/app/admin/
+   creating: /workspace/src/app/patient/[id]/
+   creating: /workspace/src/app/api/auth/
+   creating: /workspace/src/app/api/konsist/
+   creating: /workspace/src/app/api/google/
+   creating: /workspace/src/app/api/admin/
+   creating: /workspace/src/app/api/auth/[...nextauth]/
+   creating: /workspace/src/app/api/konsist/agendamentos/
+   creating: /workspace/src/app/api/google/status/
+   creating: /workspace/src/app/api/google/sync/
+   creating: /workspace/src/app/api/google/calendars/
+   creating: /workspace/src/app/api/google/oauth/
+   creating: /workspace/src/app/api/google/connect/
+   creating: /workspace/src/app/api/google/select-calendar/
+   creating: /workspace/src/app/api/google/oauth/callback/
+   creating: /workspace/src/app/api/google/oauth/start/
+   creating: /workspace/src/app/api/admin/calendar-links/
+   creating: /workspace/src/app/api/admin/users/
+   creating: /workspace/src/app/api/admin/access-requests/
+   creating: /workspace/src/app/api/admin/calendar-links/approve/
+   creating: /workspace/src/app/api/admin/calendar-links/deny/
+   creating: /workspace/src/app/api/admin/users/set-status/
+   creating: /workspace/src/app/api/admin/access-requests/approve/
+   creating: /workspace/src/app/api/admin/access-requests/deny/
+   creating: /workspace/src/app/professional/calendar/
+   creating: /workspace/src/app/settings/calendar/
+   creating: /workspace/src/app/settings/calendar/picker/
+   creating: /workspace/src/app/admin/requests/
+   creating: /workspace/src/app/admin/calendar-links/
+   creating: /workspace/src/app/admin/logs/
+   creating: /workspace/src/app/admin/calendar/
+   creating: /workspace/src/app/admin/professionals/
+   creating: /workspace/src/app/admin/users/
+   creating: /workspace/src/app/admin/patients/
+   creating: /workspace/src/app/admin/calendar-konsist/
+  inflating: /workspace/tsconfig.json
+  inflating: /workspace/h
+  inflating: /workspace/prisma.config.ts
+  inflating: /workspace/middleware.ts.bak.1768698488
+  inflating: /workspace/package.json
+  inflating: /workspace/prisma.config.ts.bak.1768697607
+  inflating: /workspace/postcss.config.mjs
+  inflating: /workspace/build.log
+  inflating: /workspace/middleware.ts
+  inflating: /workspace/eslint.config.mjs
+  inflating: /workspace/prisma.config.ts.bak.1768697003
+  inflating: /workspace/package-lock.json
+  inflating: /workspace/prisma.config.ts.bak.1768696806
+  inflating: /workspace/dev.db
+  inflating: /workspace/middleware.ts.bak.1768698485
+  inflating: /workspace/README.md
+  inflating: /workspace/next.config.ts
+  inflating: /workspace/.github/workflows/google-calendar-sync.yml
+  inflating: /workspace/prisma/schema.prisma
+  inflating: /workspace/prisma/schema.prisma.bak.1768696709
+  inflating: /workspace/prisma/schema.prisma.bak.1768696674
+  inflating: /workspace/prisma/schema.prisma.bak.1768697123
+  inflating: /workspace/prisma/schema.prisma.bak.1768696717
+  inflating: /workspace/prisma/schema.prisma.bak.1768697607
+  inflating: /workspace/prisma/dev.db
+  inflating: /workspace/prisma/schema.prisma.bak.1768696703
+  inflating: /workspace/prisma/migrations/migration_lock.toml
+  inflating: /workspace/prisma/migrations/20260117230920_add_audit_log/migration.sql
+  inflating: /workspace/prisma/migrations/20260117234546_add_google_calendar_link/migration.sql
+  inflating: /workspace/prisma/migrations/20260117230310_npx_prisma_migrate_devnpx_prisma_generate/migration.sql
+  inflating: /workspace/prisma/migrations/20260118004450_init_fix/migration.sql
+  inflating: /workspace/_app_old/api/google/status/route.ts
+  inflating: /workspace/_app_old/api/google/connect/route.ts
+  inflating: /workspace/public/window.svg
+  inflating: /workspace/public/globe.svg
+  inflating: /workspace/public/next.svg
+  inflating: /workspace/public/vercel.svg
+  inflating: /workspace/public/file.svg
+  inflating: /workspace/scripts/fix-calendarpretty.mjs
+  inflating: /workspace/scripts/update-all.sh
+  inflating: /workspace/src/middleware.ts.bak.1768695820
+  inflating: /workspace/src/middleware.ts.bak.1768695534
+  inflating: /workspace/src/middleware.ts.bak.1768695629
+  inflating: /workspace/src/components/calendar/CalendarPretty.tsx.bak.20260118-133603
+  inflating: /workspace/src/components/calendar/CalendarPretty.tsx
+  inflating: /workspace/src/components/calendar/CalendarPretty.tsx.bak.20260118-133612
+  inflating: /workspace/src/lib/auth.ts.bak.1768697607
+  inflating: /workspace/src/lib/auth.ts
+  inflating: /workspace/src/lib/auth.ts.bak.1768694666
+  inflating: /workspace/src/lib/prisma.ts
+  inflating: /workspace/src/lib/prisma.ts.bak.1768697607
+  inflating: /workspace/src/lib/prisma.ts.bak.1768697958
+  inflating: /workspace/src/lib/prisma.ts.bak.1768697774
+  inflating: /workspace/src/lib/prisma.ts.bak.1768698206
+  inflating: /workspace/src/lib/prisma.ts.bak.1768698216
+  inflating: /workspace/src/lib/ui/AdminShell.tsx
+  inflating: /workspace/src/app/layout.tsx
+  inflating: /workspace/src/app/favicon.ico
+  inflating: /workspace/src/app/globals.css
+  inflating: /workspace/src/app/page.tsx
+  inflating: /workspace/src/app/patient/[id]/page.tsx
+  inflating: /workspace/src/app/logout/page.tsx
+  inflating: /workspace/src/app/api/auth/[...nextauth]/route.ts
+  inflating: /workspace/src/app/api/konsist/agendamentos/route.ts
+  inflating: /workspace/src/app/api/google/status/route.ts
+  inflating: /workspace/src/app/api/google/sync/route.ts
+  inflating: /workspace/src/app/api/google/calendars/route.ts
+  inflating: /workspace/src/app/api/google/connect/route.ts
+  inflating: /workspace/src/app/api/google/select-calendar/route.ts
+  inflating: /workspace/src/app/api/admin/calendar-links/approve/route.ts
+  inflating: /workspace/src/app/api/admin/calendar-links/deny/route.ts
+  inflating: /workspace/src/app/api/admin/users/set-status/route.ts
+  inflating: /workspace/src/app/api/admin/access-requests/approve/route.ts
+  inflating: /workspace/src/app/api/admin/access-requests/deny/route.ts
+  inflating: /workspace/src/app/professional/calendar/page.tsx
+  inflating: /workspace/src/app/login/GoogleSignInButton.tsx
+  inflating: /workspace/src/app/login/page.tsx
+  inflating: /workspace/src/app/login/loading.tsx
+  inflating: /workspace/src/app/settings/calendar/page.tsx
+  inflating: /workspace/src/app/settings/calendar/picker/page.tsx
+  inflating: /workspace/src/app/settings/calendar/picker/ui.tsx
+  inflating: /workspace/src/app/dashboard/page.tsx
+  inflating: /workspace/src/app/pending/page.tsx
+  inflating: /workspace/src/app/admin/layout.tsx
+  inflating: /workspace/src/app/admin/page.tsx
+  inflating: /workspace/src/app/admin/requests/page.tsx
+  inflating: /workspace/src/app/admin/calendar-links/page.tsx
+  inflating: /workspace/src/app/admin/logs/page.tsx
+  inflating: /workspace/src/app/admin/calendar/page.tsx
+  inflating: /workspace/src/app/admin/calendar/ui.tsx
+  inflating: /workspace/src/app/admin/professionals/page.tsx
+  inflating: /workspace/src/app/admin/users/page.tsx
+  inflating: /workspace/src/app/admin/patients/page.tsx
+  inflating: /workspace/src/app/admin/calendar-konsist/page.tsx
+  inflating: /workspace/src/app/admin/calendar-konsist/CalendarPretty.tsx
+  inflating: /workspace/src/app/admin/calendar-konsist/loading.tsx
+  inflating: /workspace/src/app/admin/calendar-konsist/ui.tsx
+BUILD
+Starting Step #0 - "pre-buildpack"
+Step #0 - "pre-buildpack": Pulling image: southamerica-east1-docker.pkg.dev/serverless-runtimes/utilities/buildpack-shim:base_20251213_18_04_RC00
+Step #0 - "pre-buildpack": base_20251213_18_04_RC00: Pulling from serverless-runtimes/utilities/buildpack-shim
+Step #0 - "pre-buildpack": Digest: sha256:375fe6f2f55cb17edbd29976def71bfcfdc0dc2a405296daf1f2d7dffabce86e
+Step #0 - "pre-buildpack": Status: Downloaded newer image for southamerica-east1-docker.pkg.dev/serverless-runtimes/utilities/buildpack-shim:base_20251213_18_04_RC00
+Step #0 - "pre-buildpack": southamerica-east1-docker.pkg.dev/serverless-runtimes/utilities/buildpack-shim:base_20251213_18_04_RC00
+Step #0 - "pre-buildpack": Preparing directory /layers
+Step #0 - "pre-buildpack": Preparing directory /workspace
+Step #0 - "pre-buildpack": Preparing directory /builder/home
+Step #0 - "pre-buildpack": Preparing directory /builder/outputs
+Step #0 - "pre-buildpack": Preparing directory /platform/env
+Step #0 - "pre-buildpack": Passing build environment variable BUILDER_OUTPUT to buildpacks
+Step #0 - "pre-buildpack": Passing build environment variable GOOGLE_LABEL_BUILDER_VERSION to buildpacks
+Step #0 - "pre-buildpack": Passing build environment variable GOOGLE_LABEL_BUILDER_IMAGE to buildpacks
+Step #0 - "pre-buildpack": Passing build environment variable GOOGLE_LABEL_RUN_IMAGE to buildpacks
+Step #0 - "pre-buildpack": Passing build environment variable GOOGLE_LABEL_SOURCE to buildpacks
+Step #0 - "pre-buildpack": Passing build environment variable GOOGLE_USE_SERVERLESS_RUNTIMES_TARBALLS to buildpacks
+Step #0 - "pre-buildpack": Passing build environment variable GOOGLE_RUNTIME_IMAGE_REGION to buildpacks
+Step #0 - "pre-buildpack": Passing build environment variable GOOGLE_BUILD_ENV to buildpacks
+Step #0 - "pre-buildpack": Passing build environment variable GOOGLE_BUILD_UNIVERSE to buildpacks
+Step #0 - "pre-buildpack": Passing build environment variable X_GOOGLE_SET_NODE_HEAP_SIZE to buildpacks
+Step #0 - "pre-buildpack": Passing build environment variable GOOGLE_LABEL_BUILD_ID to buildpacks
+Step #0 - "pre-buildpack": Passing build environment variable GOOGLE_LABEL_BASE_IMAGE to buildpacks
+Finished Step #0 - "pre-buildpack"
+Starting Step #1 - "build"
+Step #1 - "build": Pulling image: southamerica-east1-docker.pkg.dev/serverless-runtimes/google-22-full/builder/universal:universal_builder_20260105_RC00
+Step #1 - "build": universal_builder_20260105_RC00: Pulling from serverless-runtimes/google-22-full/builder/universal
+Step #1 - "build": 63e5bc7682b8: Already exists
+Step #1 - "build": c892ac7883ad: Already exists
+Step #1 - "build": 22583a79aa6d: Already exists
+Step #1 - "build": 182afb1fe5dc: Pulling fs layer
+Step #1 - "build": 1a82443b3661: Pulling fs layer
+Step #1 - "build": eb9f0f7cd326: Pulling fs layer
+Step #1 - "build": b34d45ac1d5c: Pulling fs layer
+Step #1 - "build": 6e740bb727ce: Pulling fs layer
+Step #1 - "build": 6b01073daef8: Pulling fs layer
+Step #1 - "build": 29e043ed036a: Pulling fs layer
+Step #1 - "build": 8f7e6a4bfc29: Pulling fs layer
+Step #1 - "build": 7e122b4585cc: Pulling fs layer
+Step #1 - "build": 8fe36d7de467: Pulling fs layer
+Step #1 - "build": f5a90410f1a5: Pulling fs layer
+Step #1 - "build": 4538852c5bdc: Pulling fs layer
+Step #1 - "build": a262f0db31c5: Pulling fs layer
+Step #1 - "build": 772f9ea1b6b8: Pulling fs layer
+Step #1 - "build": 651a19c47065: Pulling fs layer
+Step #1 - "build": 6d46dd241c32: Pulling fs layer
+Step #1 - "build": f4481483953d: Pulling fs layer
+Step #1 - "build": 0a34eb78609c: Pulling fs layer
+Step #1 - "build": b7901a98f519: Pulling fs layer
+Step #1 - "build": d3da99abb40b: Pulling fs layer
+Step #1 - "build": 1e918fcf101c: Pulling fs layer
+Step #1 - "build": 1d8ecccd61a8: Pulling fs layer
+Step #1 - "build": 9c085407843f: Pulling fs layer
+Step #1 - "build": 08746384b714: Pulling fs layer
+Step #1 - "build": 9d19f88d20c7: Pulling fs layer
+Step #1 - "build": b29890c2bf18: Pulling fs layer
+Step #1 - "build": 2acea1525155: Pulling fs layer
+Step #1 - "build": 700bced15193: Pulling fs layer
+Step #1 - "build": d561b8764162: Pulling fs layer
+Step #1 - "build": 6453c146ddeb: Pulling fs layer
+Step #1 - "build": a2310fd8882f: Pulling fs layer
+Step #1 - "build": 246662ab6d74: Pulling fs layer
+Step #1 - "build": 8806704cbb5a: Pulling fs layer
+Step #1 - "build": 7768260fb7f9: Pulling fs layer
+Step #1 - "build": 1d88a902be9b: Pulling fs layer
+Step #1 - "build": 548c7f502dcd: Pulling fs layer
+Step #1 - "build": 6102d3581b2e: Pulling fs layer
+Step #1 - "build": d3e76ffc5fb5: Pulling fs layer
+Step #1 - "build": fafffed1bbb0: Pulling fs layer
+Step #1 - "build": 8227f80ffb0c: Pulling fs layer
+Step #1 - "build": 96ec639c0f23: Pulling fs layer
+Step #1 - "build": 263da4513a92: Pulling fs layer
+Step #1 - "build": 8fd9ca77384c: Pulling fs layer
+Step #1 - "build": 9379c3938bf2: Pulling fs layer
+Step #1 - "build": c37f097eacc2: Pulling fs layer
+Step #1 - "build": 4a20a4584b18: Pulling fs layer
+Step #1 - "build": cac4be539d10: Pulling fs layer
+Step #1 - "build": 500f7a95d70c: Pulling fs layer
+Step #1 - "build": eb75ca38b192: Pulling fs layer
+Step #1 - "build": ea049b1459ea: Pulling fs layer
+Step #1 - "build": b6a14fba7a39: Pulling fs layer
+Step #1 - "build": e6a61cebe396: Pulling fs layer
+Step #1 - "build": 333ac4db163a: Pulling fs layer
+Step #1 - "build": 7df03b65594d: Pulling fs layer
+Step #1 - "build": f72b19ac55fb: Pulling fs layer
+Step #1 - "build": 327a7c843995: Pulling fs layer
+Step #1 - "build": 8c93a4dc9691: Pulling fs layer
+Step #1 - "build": 4f4fb700ef54: Pulling fs layer
+Step #1 - "build": 29e043ed036a: Waiting
+Step #1 - "build": 8f7e6a4bfc29: Waiting
+Step #1 - "build": 7e122b4585cc: Waiting
+Step #1 - "build": 8fe36d7de467: Waiting
+Step #1 - "build": f5a90410f1a5: Waiting
+Step #1 - "build": 4538852c5bdc: Waiting
+Step #1 - "build": a262f0db31c5: Waiting
+Step #1 - "build": 772f9ea1b6b8: Waiting
+Step #1 - "build": 651a19c47065: Waiting
+Step #1 - "build": 6d46dd241c32: Waiting
+Step #1 - "build": f4481483953d: Waiting
+Step #1 - "build": 0a34eb78609c: Waiting
+Step #1 - "build": b7901a98f519: Waiting
+Step #1 - "build": d3da99abb40b: Waiting
+Step #1 - "build": 1e918fcf101c: Waiting
+Step #1 - "build": 1d8ecccd61a8: Waiting
+Step #1 - "build": 9c085407843f: Waiting
+Step #1 - "build": 08746384b714: Waiting
+Step #1 - "build": 9d19f88d20c7: Waiting
+Step #1 - "build": b29890c2bf18: Waiting
+Step #1 - "build": 2acea1525155: Waiting
+Step #1 - "build": 700bced15193: Waiting
+Step #1 - "build": d561b8764162: Waiting
+Step #1 - "build": 6453c146ddeb: Waiting
+Step #1 - "build": a2310fd8882f: Waiting
+Step #1 - "build": 246662ab6d74: Waiting
+Step #1 - "build": 8806704cbb5a: Waiting
+Step #1 - "build": 7768260fb7f9: Waiting
+Step #1 - "build": 1d88a902be9b: Waiting
+Step #1 - "build": 548c7f502dcd: Waiting
+Step #1 - "build": 6102d3581b2e: Waiting
+Step #1 - "build": d3e76ffc5fb5: Waiting
+Step #1 - "build": fafffed1bbb0: Waiting
+Step #1 - "build": 8227f80ffb0c: Waiting
+Step #1 - "build": 96ec639c0f23: Waiting
+Step #1 - "build": 263da4513a92: Waiting
+Step #1 - "build": 8fd9ca77384c: Waiting
+Step #1 - "build": 9379c3938bf2: Waiting
+Step #1 - "build": c37f097eacc2: Waiting
+Step #1 - "build": 4a20a4584b18: Waiting
+Step #1 - "build": cac4be539d10: Waiting
+Step #1 - "build": 500f7a95d70c: Waiting
+Step #1 - "build": eb75ca38b192: Waiting
+Step #1 - "build": ea049b1459ea: Waiting
+Step #1 - "build": b6a14fba7a39: Waiting
+Step #1 - "build": e6a61cebe396: Waiting
+Step #1 - "build": 333ac4db163a: Waiting
+Step #1 - "build": 7df03b65594d: Waiting
+Step #1 - "build": f72b19ac55fb: Waiting
+Step #1 - "build": 327a7c843995: Waiting
+Step #1 - "build": 8c93a4dc9691: Waiting
+Step #1 - "build": 4f4fb700ef54: Waiting
+Step #1 - "build": 182afb1fe5dc: Verifying Checksum
+Step #1 - "build": 182afb1fe5dc: Download complete
+Step #1 - "build": 182afb1fe5dc: Pull complete
+Step #1 - "build": b34d45ac1d5c: Verifying Checksum
+Step #1 - "build": b34d45ac1d5c: Download complete
+Step #1 - "build": eb9f0f7cd326: Verifying Checksum
+Step #1 - "build": eb9f0f7cd326: Download complete
+Step #1 - "build": 6b01073daef8: Verifying Checksum
+Step #1 - "build": 6b01073daef8: Download complete
+Step #1 - "build": 6e740bb727ce: Verifying Checksum
+Step #1 - "build": 6e740bb727ce: Download complete
+Step #1 - "build": 1a82443b3661: Verifying Checksum
+Step #1 - "build": 1a82443b3661: Download complete
+Step #1 - "build": 29e043ed036a: Verifying Checksum
+Step #1 - "build": 29e043ed036a: Download complete
+Step #1 - "build": 8f7e6a4bfc29: Verifying Checksum
+Step #1 - "build": 8f7e6a4bfc29: Download complete
+Step #1 - "build": 8fe36d7de467: Verifying Checksum
+Step #1 - "build": 8fe36d7de467: Download complete
+Step #1 - "build": f5a90410f1a5: Verifying Checksum
+Step #1 - "build": f5a90410f1a5: Download complete
+Step #1 - "build": 4538852c5bdc: Verifying Checksum
+Step #1 - "build": 4538852c5bdc: Download complete
+Step #1 - "build": a262f0db31c5: Verifying Checksum
+Step #1 - "build": a262f0db31c5: Download complete
+Step #1 - "build": 1a82443b3661: Pull complete
+Step #1 - "build": 7e122b4585cc: Download complete
+Step #1 - "build": eb9f0f7cd326: Pull complete
+Step #1 - "build": 6d46dd241c32: Verifying Checksum
+Step #1 - "build": 6d46dd241c32: Download complete
+Step #1 - "build": 651a19c47065: Verifying Checksum
+Step #1 - "build": 651a19c47065: Download complete
+Step #1 - "build": b34d45ac1d5c: Pull complete
+Step #1 - "build": 0a34eb78609c: Verifying Checksum
+Step #1 - "build": 0a34eb78609c: Download complete
+Step #1 - "build": b7901a98f519: Verifying Checksum
+Step #1 - "build": b7901a98f519: Download complete
+Step #1 - "build": 6e740bb727ce: Pull complete
+Step #1 - "build": 772f9ea1b6b8: Verifying Checksum
+Step #1 - "build": 772f9ea1b6b8: Download complete
+Step #1 - "build": d3da99abb40b: Verifying Checksum
+Step #1 - "build": d3da99abb40b: Download complete
+Step #1 - "build": f4481483953d: Verifying Checksum
+Step #1 - "build": f4481483953d: Download complete
+Step #1 - "build": 1e918fcf101c: Verifying Checksum
+Step #1 - "build": 1e918fcf101c: Download complete
+Step #1 - "build": 6b01073daef8: Pull complete
+Step #1 - "build": 1d8ecccd61a8: Verifying Checksum
+Step #1 - "build": 1d8ecccd61a8: Download complete
+Step #1 - "build": 29e043ed036a: Pull complete
+Step #1 - "build": 08746384b714: Verifying Checksum
+Step #1 - "build": 08746384b714: Download complete
+Step #1 - "build": 9c085407843f: Verifying Checksum
+Step #1 - "build": 9c085407843f: Download complete
+Step #1 - "build": 9d19f88d20c7: Verifying Checksum
+Step #1 - "build": 9d19f88d20c7: Download complete
+Step #1 - "build": 2acea1525155: Verifying Checksum
+Step #1 - "build": 2acea1525155: Download complete
+Step #1 - "build": 8f7e6a4bfc29: Pull complete
+Step #1 - "build": 7e122b4585cc: Pull complete
+Step #1 - "build": b29890c2bf18: Download complete
+Step #1 - "build": 700bced15193: Verifying Checksum
+Step #1 - "build": 700bced15193: Download complete
+Step #1 - "build": 6453c146ddeb: Verifying Checksum
+Step #1 - "build": 6453c146ddeb: Download complete
+Step #1 - "build": a2310fd8882f: Verifying Checksum
+Step #1 - "build": a2310fd8882f: Download complete
+Step #1 - "build": 246662ab6d74: Verifying Checksum
+Step #1 - "build": 246662ab6d74: Download complete
+Step #1 - "build": d561b8764162: Verifying Checksum
+Step #1 - "build": d561b8764162: Download complete
+Step #1 - "build": 8fe36d7de467: Pull complete
+Step #1 - "build": 7768260fb7f9: Verifying Checksum
+Step #1 - "build": 7768260fb7f9: Download complete
+Step #1 - "build": 1d88a902be9b: Verifying Checksum
+Step #1 - "build": 1d88a902be9b: Download complete
+Step #1 - "build": 548c7f502dcd: Verifying Checksum
+Step #1 - "build": 548c7f502dcd: Download complete
+Step #1 - "build": f5a90410f1a5: Pull complete
+Step #1 - "build": 6102d3581b2e: Verifying Checksum
+Step #1 - "build": 6102d3581b2e: Download complete
+Step #1 - "build": d3e76ffc5fb5: Verifying Checksum
+Step #1 - "build": d3e76ffc5fb5: Download complete
+Step #1 - "build": 8806704cbb5a: Verifying Checksum
+Step #1 - "build": 8806704cbb5a: Download complete
+Step #1 - "build": 4538852c5bdc: Pull complete
+Step #1 - "build": fafffed1bbb0: Verifying Checksum
+Step #1 - "build": fafffed1bbb0: Download complete
+Step #1 - "build": a262f0db31c5: Pull complete
+Step #1 - "build": 8fd9ca77384c: Verifying Checksum
+Step #1 - "build": 8fd9ca77384c: Download complete
+Step #1 - "build": 8227f80ffb0c: Verifying Checksum
+Step #1 - "build": 8227f80ffb0c: Download complete
+Step #1 - "build": 772f9ea1b6b8: Pull complete
+Step #1 - "build": c37f097eacc2: Verifying Checksum
+Step #1 - "build": c37f097eacc2: Download complete
+Step #1 - "build": 96ec639c0f23: Verifying Checksum
+Step #1 - "build": 96ec639c0f23: Download complete
+Step #1 - "build": 263da4513a92: Verifying Checksum
+Step #1 - "build": 263da4513a92: Download complete
+Step #1 - "build": 651a19c47065: Pull complete
+Step #1 - "build": 4a20a4584b18: Verifying Checksum
+Step #1 - "build": 4a20a4584b18: Download complete
+Step #1 - "build": 9379c3938bf2: Verifying Checksum
+Step #1 - "build": 9379c3938bf2: Download complete
+Step #1 - "build": 500f7a95d70c: Verifying Checksum
+Step #1 - "build": 500f7a95d70c: Download complete
+Step #1 - "build": 6d46dd241c32: Pull complete
+Step #1 - "build": cac4be539d10: Verifying Checksum
+Step #1 - "build": cac4be539d10: Download complete
+Step #1 - "build": ea049b1459ea: Verifying Checksum
+Step #1 - "build": ea049b1459ea: Download complete
+Step #1 - "build": eb75ca38b192: Verifying Checksum
+Step #1 - "build": eb75ca38b192: Download complete
+Step #1 - "build": f72b19ac55fb: Download complete
+Step #1 - "build": 327a7c843995: Download complete
+Step #1 - "build": f4481483953d: Pull complete
+Step #1 - "build": e6a61cebe396: Verifying Checksum
+Step #1 - "build": e6a61cebe396: Download complete
+Step #1 - "build": 8c93a4dc9691: Verifying Checksum
+Step #1 - "build": 8c93a4dc9691: Download complete
+Step #1 - "build": 4f4fb700ef54: Verifying Checksum
+Step #1 - "build": 4f4fb700ef54: Download complete
+Step #1 - "build": 0a34eb78609c: Pull complete
+Step #1 - "build": 7df03b65594d: Verifying Checksum
+Step #1 - "build": 7df03b65594d: Download complete
+Step #1 - "build": b6a14fba7a39: Verifying Checksum
+Step #1 - "build": b6a14fba7a39: Download complete
+Step #1 - "build": b7901a98f519: Pull complete
+Step #1 - "build": 333ac4db163a: Verifying Checksum
+Step #1 - "build": 333ac4db163a: Download complete
+Step #1 - "build": d3da99abb40b: Pull complete
+Step #1 - "build": 1e918fcf101c: Pull complete
+Step #1 - "build": 1d8ecccd61a8: Pull complete
+Step #1 - "build": 9c085407843f: Pull complete
+Step #1 - "build": 08746384b714: Pull complete
+Step #1 - "build": 9d19f88d20c7: Pull complete
+Step #1 - "build": b29890c2bf18: Pull complete
+Step #1 - "build": 2acea1525155: Pull complete
+Step #1 - "build": 700bced15193: Pull complete
+Step #1 - "build": d561b8764162: Pull complete
+Step #1 - "build": 6453c146ddeb: Pull complete
+Step #1 - "build": a2310fd8882f: Pull complete
+Step #1 - "build": 246662ab6d74: Pull complete
+Step #1 - "build": 8806704cbb5a: Pull complete
+Step #1 - "build": 7768260fb7f9: Pull complete
+Step #1 - "build": 1d88a902be9b: Pull complete
+Step #1 - "build": 548c7f502dcd: Pull complete
+Step #1 - "build": 6102d3581b2e: Pull complete
+Step #1 - "build": d3e76ffc5fb5: Pull complete
+Step #1 - "build": fafffed1bbb0: Pull complete
+Step #1 - "build": 8227f80ffb0c: Pull complete
+Step #1 - "build": 96ec639c0f23: Pull complete
+Step #1 - "build": 263da4513a92: Pull complete
+Step #1 - "build": 8fd9ca77384c: Pull complete
+Step #1 - "build": 9379c3938bf2: Pull complete
+Step #1 - "build": c37f097eacc2: Pull complete
+Step #1 - "build": 4a20a4584b18: Pull complete
+Step #1 - "build": cac4be539d10: Pull complete
+Step #1 - "build": 500f7a95d70c: Pull complete
+Step #1 - "build": eb75ca38b192: Pull complete
+Step #1 - "build": ea049b1459ea: Pull complete
+Step #1 - "build": b6a14fba7a39: Pull complete
+Step #1 - "build": e6a61cebe396: Pull complete
+Step #1 - "build": 333ac4db163a: Pull complete
+Step #1 - "build": 7df03b65594d: Pull complete
+Step #1 - "build": f72b19ac55fb: Pull complete
+Step #1 - "build": 327a7c843995: Pull complete
+Step #1 - "build": 8c93a4dc9691: Pull complete
+Step #1 - "build": 4f4fb700ef54: Pull complete
+Step #1 - "build": Digest: sha256:ff471766b4152bebc81e68b6c293f2ce147025de1df1101803981dd8e90649d3
+Step #1 - "build": Status: Downloaded newer image for southamerica-east1-docker.pkg.dev/serverless-runtimes/google-22-full/builder/universal:universal_builder_20260105_RC00
+Step #1 - "build": southamerica-east1-docker.pkg.dev/serverless-runtimes/google-22-full/builder/universal:universal_builder_20260105_RC00
+Step #1 - "build": Warning: No cached data will be used, no cache specified.
+Step #1 - "build": ===> ANALYZING
+Step #1 - "build": Image with name "southamerica-east1-docker.pkg.dev/avance-portal-prod-br/cloud-run-source-deploy/avance-portal:latest" not found
+Step #1 - "build": ===> DETECTING
+Step #1 - "build": target distro name/version labels not found, reading /etc/os-release file
+Step #1 - "build": 3 of 5 buildpacks participating
+Step #1 - "build": google.nodejs.runtime    1.0.0
+Step #1 - "build": google.nodejs.npm        1.1.1
+Step #1 - "build": google.utils.label-image 0.0.2
+Step #1 - "build": ===> RESTORING
+Step #1 - "build": Skipping buildpack layer analysis
+Step #1 - "build": ===> BUILDING
+Step #1 - "build": target distro name/version labels not found, reading /etc/os-release file
+Step #1 - "build": === Node.js - Runtime (google.nodejs.runtime@1.0.0) ===
+Step #1 - "build": Resolved version 20.20.0 for Node.js from region southamerica-east1
+Step #1 - "build": ***** CACHE MISS: "nodejs"
+Step #1 - "build": Installing Node.js v20.20.0.
+Step #1 - "build": Runtime successfully downloaded from southamerica-east1-docker.pkg.dev/serverless-runtimes/runtimes-ubuntu2204/nodejs:20.20.0
+Step #1 - "build": Installing the heapsize.sh exec.d script.
+Step #1 - "build": === Node.js - Npm (google.nodejs.npm@1.1.1) ===
+Step #1 - "build": ***** CACHE MISS: "npm_modules"
+Step #1 - "build": Installing application dependencies.
+Step #1 - "build": --------------------------------------------------------------------------------
+Step #1 - "build": Running "npm ci --quiet --no-fund --no-audit (NODE_ENV=development)"
+Step #1 - "build": npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+Step #1 - "build":
+Step #1 - "build": > avance-portal@0.1.0 postinstall
+Step #1 - "build": > node -e "const {execSync}=require('child_process'); if(process.env.DATABASE_URL){ console.log('postinstall: prisma generate'); execSync('npx prisma generate',{stdio:'inherit'}); } else { console.log('postinstall: skipping prisma generate (no DATABASE_URL)'); }"
+Step #1 - "build":
+Step #1 - "build": postinstall: skipping prisma generate (no DATABASE_URL)
+Step #1 - "build":
+Step #1 - "build": added 556 packages in 29s
+Step #1 - "build": Done "npm ci --quiet --no-fund --no-audit (NODE_ENV=development)" (29.094309279s)
+Step #1 - "build": --------------------------------------------------------------------------------
+Step #1 - "build": Running "npm run build"
+Step #1 - "build":
+Step #1 - "build": > avance-portal@0.1.0 build
+Step #1 - "build": > next build
+Step #1 - "build":
+Step #1 - "build": Attention: Next.js now collects completely anonymous telemetry regarding usage.
+Step #1 - "build": This information is used to shape Next.js' roadmap and prioritize features.
+Step #1 - "build": You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+Step #1 - "build": https://nextjs.org/telemetry
+Step #1 - "build":
+Step #1 - "build": ▲ Next.js 16.1.3 (Turbopack)
+Step #1 - "build":
+Step #1 - "build":   Creating an optimized production build ...
+Step #1 - "build": ✓ Compiled successfully in 42s
+Step #1 - "build":   Running TypeScript ...
+Step #1 - "build": Failed to compile.
+Step #1 - "build":
+Step #1 - "build": ./src/app/admin/calendar-links/page.tsx:22:21
+Step #1 - "build": Type error: Parameter 'l' implicitly has an 'any' type.
+Step #1 - "build":
+Step #1 - "build":   20 |
+Step #1 - "build":   21 |       <div style={{ display: "grid", gap: 12 }}>
+Step #1 - "build": > 22 |         {links.map((l) => {
+Step #1 - "build":      |                     ^
+Step #1 - "build":   23 |           const m = mapByUserId.get(l.userId);
+Step #1 - "build":   24 |           return (
+Step #1 - "build":   25 |             <div
+Step #1 - "build": Next.js build worker exited with code: 1 and signal: null
+Step #1 - "build": Done "npm run build" (1m15.658670125s)
+Step #1 - "build": --------------------------------------------------------------------------------
+Step #1 - "build": failed to build: (error ID: 1a2262f3):
+Step #1 - "build": Failed to compile.
+Step #1 - "build":
+Step #1 - "build": ./src/app/admin/calendar-links/page.tsx:22:21
+Step #1 - "build": Type error: Parameter 'l' implicitly has an 'any' type.
+Step #1 - "build":
+Step #1 - "build":   20 |
+Step #1 - "build":   21 |       <div style={{ display: "grid", gap: 12 }}>
+Step #1 - "build": > 22 |         {links.map((l) => {
+Step #1 - "build":      |                     ^
+Step #1 - "build":   23 |           const m = mapByUserId.get(l.userId);
+Step #1 - "build":   24 |           return (
+Step #1 - "build":   25 |             <div
+Step #1 - "build": Next.js build worker exited with code: 1 and signal: null
+Step #1 - "build": NOTE: Running the default build script can be skipped by passing the empty environment variable "GOOGLE_NODE_RUN_SCRIPTS=" to the build
+Step #1 - "build": --------------------------------------------------------------------------------
+Step #1 - "build": Sorry your project couldn't be built.
+Step #1 - "build": Our documentation explains ways to configure Buildpacks to better recognise your project:
+Step #1 - "build":  -> https://cloud.google.com/docs/buildpacks/overview
+Step #1 - "build": If you think you've found an issue, please report it:
+Step #1 - "build":  -> https://github.com/GoogleCloudPlatform/buildpacks/issues/new
+Step #1 - "build": --------------------------------------------------------------------------------
+Step #1 - "build": ERROR: failed to build: exit status 1
+Finished Step #1 - "build"
+ERROR
+ERROR: build step 1 "southamerica-east1-docker.pkg.dev/serverless-runtimes/google-22-full/builder/universal:universal_builder_20260105_RC00" failed: step exited with non-zero status: 51
+----------------------------------------------------------------
