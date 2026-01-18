@@ -30,7 +30,7 @@ export default async function AdminCalendarLinksPage() {
               <div style={{ opacity: 0.85, marginTop: 6 }}>
                 Agenda: {l.calendarName || "-"} ({l.calendarId || "-"})<br />
                 Refresh token: {l.refreshToken ? "✅" : "⚠️ (reauthorize)"}<br />
-                Profissional (Konsist): {m?.konsistProfissionalNome || "-"}<br />
+                Profissional (Konsist): {(m as any)?.konsistProfissionalNome || "-"}<br />
                 Aprovado: {l.approved ? "✅ SIM" : "⏳ NÃO"}
               </div>
 
@@ -44,7 +44,7 @@ export default async function AdminCalendarLinksPage() {
                   <input
                     name="konsistProfissionalNome"
                     placeholder="Nome EXATO do profissional no Konsist"
-                    defaultValue={m?.konsistProfissionalNome || ""}
+                    defaultValue={(m as any)?.konsistProfissionalNome || ""}
                     style={{ padding: 8, borderRadius: 10, minWidth: 340 }}
                   />
                   <button type="submit" style={{ padding: "8px 12px", borderRadius: 10 }}>

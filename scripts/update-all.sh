@@ -58,7 +58,6 @@ model KonsistProfessionalMap {
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 }
-EOF
 fi
 
 step "[4] Rodar migrate + generate"
@@ -192,16 +191,12 @@ export const authOptions: NextAuthOptions = {
     },
   },
 };
-EOF
-
 cat > "src/app/api/auth/[...nextauth]/route.ts" <<'EOF'
 export const runtime = "nodejs";
 import NextAuth from "next-auth";
 import { authOptions } from "@/lib/auth";
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
-EOF
-
 step "[6] APIs Google"
 cat > src/app/api/google/calendars/route.ts <<'EOF'
 export const runtime = "nodejs";
@@ -243,8 +238,6 @@ export async function GET(req: Request) {
     approved: link.approved,
   });
 }
-EOF
-
 cat > src/app/api/google/select-calendar/route.ts <<'EOF'
 export const runtime = "nodejs";
 
@@ -276,8 +269,6 @@ export async function POST(req: Request) {
 
   return NextResponse.redirect(new URL("/settings/calendar", req.url));
 }
-EOF
-
 step "[7] Páginas profissional"
 mkdir -p src/app/settings/calendar
 cat > src/app/settings/calendar/page.tsx <<'EOF'
@@ -335,14 +326,10 @@ export default async function SettingsCalendarPage() {
     </div>
   );
 }
-EOF
-
 cat > src/app/settings/calendar/picker/page.tsx <<'EOF'
 export const runtime = "nodejs";
 import PickerClient from "./ui";
 export default function PickerPage() { return <PickerClient />; }
-EOF
-
 cat > src/app/settings/calendar/picker/ui.tsx <<'EOF'
 "use client";
 import { useEffect, useState } from "react";
@@ -419,8 +406,6 @@ export default function PickerClient() {
     </div>
   );
 }
-EOF
-
 step "[8] Admin calendar-links + approve/deny APIs"
 mkdir -p src/app/admin/calendar-links
 cat > src/app/admin/calendar-links/page.tsx <<'EOF'
@@ -494,8 +479,6 @@ export default async function AdminCalendarLinksPage() {
     </div>
   );
 }
-EOF
-
 cat > src/app/api/admin/calendar-links/approve/route.ts <<'EOF'
 export const runtime = "nodejs";
 
@@ -534,8 +517,6 @@ export async function POST(req: Request) {
 
   return NextResponse.redirect(new URL("/admin/calendar-links", req.url));
 }
-EOF
-
 cat > src/app/api/admin/calendar-links/deny/route.ts <<'EOF'
 export const runtime = "nodejs";
 
@@ -563,8 +544,6 @@ export async function POST(req: Request) {
 
   return NextResponse.redirect(new URL("/admin/calendar-links", req.url));
 }
-EOF
-
 echo ""
 echo "✅ OK: atualizado."
 echo "Agora rode: npm run dev"
