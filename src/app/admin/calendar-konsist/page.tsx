@@ -1,13 +1,13 @@
 export const runtime = "nodejs";
 
-import CalendarClient from "./ui";
+import CalendarPretty from "./CalendarPretty";
 
 export default function AdminCalendarPage() {
   return (
-    <CalendarClient
+    <CalendarPretty
       mode="admin"
-      title="Calendário (Konsist) — Admin"
-      subtitle="Agenda interativa com filtros por profissional / paciente / status e cores por status."
+      title="Calendário — Admin"
+      subtitle="Agenda do dia (Konsist) com filtros e resumo por status."
     />
   );
 }

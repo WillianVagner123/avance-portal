@@ -18,7 +18,7 @@ export default function AdminHome() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
-        <a href="/admin/konsist-calendar" style={cardStyle}>📅 Calendário (Konsist)</a>
+        <a href="/admin/calendar-konsist" style={cardStyle}>📅 Calendário (Konsist)</a>
         <a href="/admin/users" style={cardStyle}>👩‍⚕️ Profissionais</a>
         <a href="/admin/requests" style={cardStyle}>✅ Solicitações</a>
         <a href="/admin/logs" style={cardStyle}>🧾 Logs</a>
