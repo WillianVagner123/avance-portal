@@ -3,7 +3,7 @@
 # ========================
 FROM node:20-slim AS builder
 
-# deps para node-gyp (caso precise)
+# deps para node-gyp
 RUN apt-get update && apt-get install -y \
   python3 \
   make \
@@ -14,14 +14,11 @@ WORKDIR /app
 
 COPY package*.json ./
 
-# evita instalar deps opcionais problemáticas
 RUN npm install --omit=optional
 
 COPY . .
 
-# Prisma generate não pode quebrar o build
 RUN npx prisma generate || echo "Prisma generate skipped"
-
 RUN npm run build
 
 # ========================
