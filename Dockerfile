@@ -9,7 +9,7 @@ RUN npm install --omit=optional
 COPY . .
 
 # prisma (schema já está aqui)
-ARG DATABASE_URL
+ARG DATABASE_URL="file:/tmp/build.db"
 ENV DATABASE_URL=$DATABASE_URL
 RUN npx prisma generate
 
