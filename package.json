@@ -8,7 +8,7 @@
     "start": "prisma generate && next start",
     "lint": "eslint",
     "prisma:generate": "prisma generate",
-    "postinstall": "node -e \"console.log(\"postinstall: prisma generate\"); require(\"child_process\").execSync(\"npx prisma generate\",{stdio:\"inherit\", env:{...process.env, DATABASE_URL: process.env.DATABASE_URL || \"file:./dev.db\"}})\""
+    "postinstall": "node scripts/prisma-generate.cjs"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.20",
