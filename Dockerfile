@@ -3,7 +3,7 @@ WORKDIR /app
 
 # deps
 COPY package*.json ./
-RUN npm install --omit=optional
+RUN npm ci
 
 # app
 COPY . .
