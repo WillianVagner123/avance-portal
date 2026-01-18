@@ -1,12 +1,12 @@
-import type { NextAuthOptions } from "next-auth";
+import type { NextAuthOptions } from "next_auth";
 import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET, // ✅ aqui (config do NextAuth)
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
-      secret: process.env.NEXTAUTH_SECRET,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       authorization: {
         params: {
