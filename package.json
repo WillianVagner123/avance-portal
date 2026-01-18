@@ -5,7 +5,7 @@
   "scripts": {
   "dev": "next dev",
   "build": "next build",
-  "start": "next start -p ${PORT:-8080} -H 0.0.0.0"
+  "start": "prisma migrate deploy && next start -p ${PORT:-8080} -H 0.0.0.0"
 },
   "dependencies": {
     "@fullcalendar/core": "^6.1.20",
