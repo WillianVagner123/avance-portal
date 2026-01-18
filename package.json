@@ -8,7 +8,8 @@
     "start": "prisma generate && next start -p 8080",
     "lint": "eslint",
     "prisma:generate": "prisma generate",
-    "postinstall": "node scripts/prisma-generate.cjs"
+    "postinstall": "npx prisma generate"
+
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.20",
