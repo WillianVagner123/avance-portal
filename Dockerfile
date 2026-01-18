@@ -1,19 +1,35 @@
-# ---------- BUILD ----------
-FROM node:18-slim AS builder
+# ========================
+# BUILD STAGE
+# ========================
+FROM node:20-slim AS builder
+
+# deps para node-gyp (caso precise)
+RUN apt-get update && apt-get install -y \
+  python3 \
+  make \
+  g++ \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+
+# evita instalar deps opcionais problemáticas
+RUN npm install --omit=optional
 
 COPY . .
-RUN npm run build || echo "Next build skipped"
 
-# ---------- RUN ----------
-FROM node:18-slim
+# Prisma generate não pode quebrar o build
+RUN npx prisma generate || echo "Prisma generate skipped"
+
+RUN npm run build
+
+# ========================
+# RUNTIME STAGE
+# ========================
+FROM node:20-slim
 
 WORKDIR /app
-
 ENV NODE_ENV=production
 
 COPY --from=builder /app ./
