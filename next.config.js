@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  allowedDevOrigins: ["http://127.0.0.1:3000", "http://localhost:3000"],
+  allowedDevOrigins: ["https://avance-portal-760280164025.southamerica-east1.run.app", "https://avance-portal-760280164025.southamerica-east1.run.app"],
 };
 
 module.exports = nextConfig;
