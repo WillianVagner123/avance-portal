@@ -10,6 +10,8 @@ COPY prisma ./prisma
 COPY prisma.config.ts ./prisma.config.ts
 
 ENV DATABASE_URL="postgresql://user:pass@localhost:5432/db?schema=public"
+ENV AUTH_SECRET="build_dummy"
+ENV NEXTAUTH_SECRET="build_dummy"
 
 RUN npm ci
 
