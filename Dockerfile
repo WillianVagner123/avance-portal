@@ -11,6 +11,8 @@ COPY prisma.config.ts ./prisma.config.ts
 
 ENV AUTH_SECRET="build_dummy"
 ENV NEXTAUTH_SECRET="build_dummy"
+ENV DATABASE_URL="build_dummy"
+
 
 RUN npm ci
 
