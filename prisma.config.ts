@@ -1,11 +1,18 @@
+// prisma.config.ts
 import { defineConfig } from "prisma/config";
 
-const DATABASE_URL =
-  process.env.DATABASE_URL ??
-  "postgresql://postgres:postgres@127.0.0.1:5432/postgres?schema=public";
+function mustEnv(name: string) {
+  const v = process.env[name];
+  if (!v) throw new Error(`Missing env ${name}`);
+  return v;
+}
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
-  migrations: { path: "prisma/migrations" },
-  datasource: { url: DATABASE_URL },
+  migrations: {
+    path: "prisma/migrations",
+  },
+  datasource: {
+    url: mustEnv("DATABASE_URL"),
+  },
 });

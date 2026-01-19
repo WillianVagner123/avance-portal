@@ -427,7 +427,7 @@ function ProgressBar({
 }
 
 export default function CalendarPretty({ mode, title, subtitle }: Props) {
-  const mainRef = useRef<FullCalendar | null>(null);
+const mainRef = useRef<FullCalendar | null>(null);
   
   const [tab, setTab] = useState<"agenda" | "filtros" | "status">("agenda");
   const [loading, setLoading] = useState(false);
@@ -437,6 +437,38 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
   const [prof, setProf] = useState<string>("ALL");
   const [status, setStatus] = useState<string>("ALL");
   const [search, setSearch] = useState<string>("");
+
+
+  const [defaultProfessional, setDefaultProfessional] = useState<string | undefined>(undefined);
+
+  // ✅ PROFESSIONAL: carrega ultimo filtro salvo e tenta vincular pelo session
+  useEffect(() => {
+    if (mode !== "professional") return;
+
+    try {
+      const saved = window.localStorage.getItem("AVANCE_PRO_SELECTED_PROF");
+      if (saved) setProf(saved);
+    } catch {}
+
+    fetch("/api/auth/session")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((s) => {
+        const v = s?.user?.konsistMedicoNome;
+        if (v) {
+          setDefaultProfessional(v);
+          setProf((p0) => (p0 && p0 !== "ALL" ? p0 : v));
+        }
+      })
+      .catch(() => {});
+  }, [mode]);
+
+  // ✅ persistir escolha do profissional no modo professional
+  useEffect(() => {
+    if (mode !== "professional") return;
+    try {
+      if (prof && prof !== "ALL") window.localStorage.setItem("AVANCE_PRO_SELECTED_PROF", prof);
+    } catch {}
+  }, [mode, prof]);
 
   const [datai, setDatai] = useState<string>("");
   const [dataf, setDataf] = useState<string>("");
@@ -901,7 +933,7 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
                         </button>
                       </div>
 
-                      {mode === "admin" && (
+                      {(mode === "admin" || mode === "professional") && (
                         <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-3">
                           <div className="mb-2 text-xs font-extrabold text-slate-200">Profissional</div>
                           <select
@@ -915,6 +947,17 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
                               </option>
                             ))}
                           </select>
+
+                          {mode === "professional" && defaultProfessional ? (
+                            <button
+                              type="button"
+                              onClick={() => setProf(defaultProfessional)}
+                              className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-extrabold text-slate-100 hover:bg-white/10"
+                            >
+                              Sou eu (padrão)
+                            </button>
+                          ) : null}
+
                         </div>
                       )}
 

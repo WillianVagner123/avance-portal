@@ -51,3 +51,6 @@ build.out
 *.log
 *.db
 .env
+
+*.bak.*
+trace-deprecation.log
