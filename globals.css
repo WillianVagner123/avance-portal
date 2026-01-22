@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* AVANCE_THEME_V1 */
+:root{
+  --bg: #0b0f14;
+  --panel: rgba(255,255,255,0.06);
+  --panel2: rgba(255,255,255,0.08);
+  --stroke: rgba(255,255,255,0.10);
+  --text: rgba(255,255,255,0.92);
+  --muted: rgba(255,255,255,0.68);
+
+  --brand: #23d18b;        /* verde premium */
+  --brand2: #2bbcff;       /* azul brilho leve */
+  --warn: #ffcc66;
+  --danger: #ff5c7a;
+
+  --r: 16px;
+  --r2: 22px;
+  --shadow: 0 12px 40px rgba(0,0,0,0.55);
+}
+
+html, body{
+  background: radial-gradient(1200px 800px at 10% 0%, rgba(35,209,139,0.16), transparent 55%),
+              radial-gradient(1000px 700px at 90% 10%, rgba(43,188,255,0.10), transparent 55%),
+              var(--bg);
+  color: var(--text);
+}
+
+a{ color: inherit; text-decoration: none; }
+*{ box-sizing: border-box; }
+
+.av-card{
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
+  border: 1px solid var(--stroke);
+  border-radius: var(--r2);
+  box-shadow: var(--shadow);
+}
+
+.av-chip{
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.05);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--muted);
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.av-btn{
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.06);
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  color: var(--text);
+}
+.av-btn:hover{ background: rgba(255,255,255,0.10); }
+
+.av-btn-primary{
+  border: 1px solid rgba(35,209,139,0.55);
+  background: rgba(35,209,139,0.14);
+}
+.av-btn-primary:hover{ background: rgba(35,209,139,0.20); }
+
+.av-input, .av-select{
+  width: 100%;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 12px;
+  outline: none;
+}
+.av-input::placeholder{ color: rgba(255,255,255,0.42); }
+
+.av-h1{ font-size: 22px; margin: 0 0 10px; }
+.av-muted{ color: var(--muted); }
+.av-grid{ display: grid; gap: 14px; }
