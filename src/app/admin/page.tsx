@@ -21,6 +21,7 @@ export default function AdminHome() {
         <a href="/admin/calendar-konsist" style={cardStyle}>📅 Calendário (Konsist)</a>
         <a href="/admin/users" style={cardStyle}>👩‍⚕️ Profissionais</a>
         <a href="/admin/requests" style={cardStyle}>✅ Solicitações</a>
+        <a href="/admin/professional-requests" style={cardStyle}>🧩 Vínculo Profissional</a>
         <a href="/admin/logs" style={cardStyle}>🧾 Logs</a>
         <a href="/admin/calendar-links" style={cardStyle}>🔗 Vinculações</a>
       </div>

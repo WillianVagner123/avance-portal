@@ -22,5 +22,11 @@ export async function POST(req: Request) {
     data: { approved: false },
   });
 
+  // Se revogou, remove também o vínculo efetivo no portal
+  await prisma.user.update({
+    where: { id: userId },
+    data: { konsistMedicoNome: null },
+  });
+
   return NextResponse.redirect(new URL("/admin/calendar-links", req.url));
 }

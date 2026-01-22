@@ -27,6 +27,12 @@ export async function POST(req: Request) {
       update: { konsistProfissionalNome },
     });
 
+    // ✅ também grava no User (usado no modo "professional" do calendário)
+    await tx.user.update({
+      where: { id: userId },
+      data: { konsistMedicoNome: konsistProfissionalNome },
+    });
+
     await tx.googleCalendarLink.update({
       where: { userId },
       data: { approved: true },

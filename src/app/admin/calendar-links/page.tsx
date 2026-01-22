@@ -13,55 +13,55 @@ export default async function AdminCalendarLinksPage() {
   const mapByUserId = new Map(maps.map((m: (typeof maps)[number]) => [m.userId, m]));
 
   return (
-    <div>
-      <h1 style={{ fontSize: 22, marginBottom: 10 }}>Autorizar vínculo (Email ↔ Profissional)</h1>
-      <p style={{ opacity: 0.85, marginBottom: 14 }}>
+    <div className="mx-auto w-full max-w-5xl p-4 sm:p-6">
+      <h1 className="text-xl font-black mb-2">Autorizar vínculo (Email ↔ Profissional)</h1>
+      <p className="text-sm text-white/70 mb-4">
         O profissional escolhe a agenda dele. Aqui o MASTER valida e aprova o vínculo com o nome do profissional no Konsist.
       </p>
 
-      <div style={{ display: "grid", gap: 12 }}>
+      <div className="grid gap-3">
         {links.map((l: any) => {
           const m = mapByUserId.get(l.userId);
           return (
             <div
               key={l.id}
-              style={{ border: "1px solid rgba(255,255,255,0.12)", borderRadius: 12, padding: 12 }}
+              className="rounded-2xl border border-white/10 bg-white/5 p-4"
             >
-              <div style={{ fontWeight: 700 }}>{l.user.email}</div>
-              <div style={{ opacity: 0.85, marginTop: 6 }}>
+              <div className="font-extrabold">{l.user.email}</div>
+              <div className="text-sm text-white/75 mt-2">
                 Agenda: {l.calendarName || "-"} ({l.calendarId || "-"})<br />
                 Refresh token: {l.refreshToken ? "✅" : "⚠️ (reauthorize)"}<br />
                 Profissional (Konsist): {(m as any)?.konsistProfissionalNome || "-"}<br />
                 Aprovado: {l.approved ? "✅ SIM" : "⏳ NÃO"}
               </div>
 
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+              <div className="mt-3 flex flex-col gap-2">
                 <form
                   method="post"
                   action="/api/admin/calendar-links/approve"
-                  style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
+                  className="flex flex-col sm:flex-row gap-2"
                 >
                   <input type="hidden" name="userId" value={l.userId} />
                   <input
                     name="konsistProfissionalNome"
                     placeholder="Nome EXATO do profissional no Konsist"
                     defaultValue={(m as any)?.konsistProfissionalNome || ""}
-                    style={{ padding: 8, borderRadius: 10, minWidth: 340 }}
+                    className="w-full sm:flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm"
                   />
-                  <button type="submit" style={{ padding: "8px 12px", borderRadius: 10 }}>
+                  <button type="submit" className="rounded-xl border border-white/10 bg-blue-600 px-4 py-2 text-sm font-extrabold hover:bg-blue-700">
                     Aprovar
                   </button>
                 </form>
 
-                <form method="post" action="/api/admin/calendar-links/deny">
+                <form method="post" action="/api/admin/calendar-links/deny" className="w-full sm:w-auto">
                   <input type="hidden" name="userId" value={l.userId} />
-                  <button type="submit" style={{ padding: "8px 12px", borderRadius: 10 }}>
+                  <button type="submit" className="w-full sm:w-auto rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-extrabold hover:bg-white/10">
                     Revogar
                   </button>
                 </form>
               </div>
 
-              <div style={{ opacity: 0.7, marginTop: 10 }}>atualizado: {new Date(l.updatedAt).toLocaleString()}</div>
+              <div className="text-xs text-white/60 mt-3">atualizado: {new Date(l.updatedAt).toLocaleString()}</div>
             </div>
           );
         })}
