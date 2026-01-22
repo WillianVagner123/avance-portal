@@ -30,6 +30,8 @@ model User {
 
   accessRequests AccessRequest[]
 
+  professionalLinkRequests ProfessionalLinkRequest[]
+
   googleCalendarLink     GoogleCalendarLink?
   konsistProfessionalMap KonsistProfessionalMap?
   googleCalendarEvents   GoogleCalendarEvent[]
@@ -105,4 +107,21 @@ model KonsistProfessionalMap {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model ProfessionalLinkRequest {
+  id     String        @id @default(cuid())
+  userId String
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  requestedProfessional String
+  status               RequestStatus @default(PENDING)
+
+  reviewedBy String?
+  reviewedAt DateTime?
+  approvedProfessional String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, status])
 }

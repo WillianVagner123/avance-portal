@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import SyncClient from "./SyncClient";
 
 export default async function SettingsCalendarPage() {
   const session = await getServerSession(authOptions);
@@ -11,19 +12,19 @@ export default async function SettingsCalendarPage() {
   if (!session?.user?.email) redirect("/login");
 
   return (
-    <div style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
-      <h1 style={{ fontSize: 22, marginBottom: 8 }}>Vincular Google Calendar</h1>
+    <div className="mx-auto w-full max-w-4xl p-4 sm:p-6">
+      <h1 className="text-xl font-black mb-2">Vincular Google Calendar</h1>
 
-      <div style={{ opacity: 0.85, marginBottom: 16 }}>
+      <div className="text-sm text-white/70 mb-4">
         Email: <b>{session.user.email}</b>
       </div>
 
-      <div style={{ border: "1px solid rgba(255,255,255,0.12)", borderRadius: 12, padding: 14, marginBottom: 12 }}>
-        <div style={{ fontWeight: 700, marginBottom: 6 }}>Status</div>
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-4 mb-3">
+        <div className="font-extrabold mb-2">Status</div>
         {!appUser?.googleCalendar ? (
-          <div style={{ opacity: 0.8 }}>Ainda sem vínculo. Clique em “Reautorizar Google”.</div>
+          <div className="text-sm text-white/70">Ainda sem vínculo. Clique em “Reautorizar Google”.</div>
         ) : (
-          <div style={{ opacity: 0.85 }}>
+          <div className="text-sm text-white/75">
             Refresh token: {appUser.googleCalendar.hasRefreshToken ? "✅" : "⚠️ ainda não (reauthorize)"}<br />
             Agenda: {appUser.googleCalendar.calendarName || "-"} ({appUser.googleCalendar.calendarId || "-"})<br />
             Aprovação do admin: {appUser.googleCalendar.approved ? "✅ Aprovado" : "⏳ Pendente"}
@@ -31,22 +32,28 @@ export default async function SettingsCalendarPage() {
         )}
       </div>
 
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
+      <div className="flex flex-col sm:flex-row gap-3 flex-wrap mb-4">
         <a
           href="/api/auth/signin/google"
-          style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)", display: "inline-block" }}
+          className="inline-block rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-extrabold hover:bg-white/10"
         >
           Reautorizar Google (Calendar)
         </a>
         <a
           href="/settings/calendar/picker"
-          style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)", display: "inline-block" }}
+          className="inline-block rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-extrabold hover:bg-white/10"
         >
           Escolher agenda
         </a>
       </div>
 
-      <p style={{ opacity: 0.85 }}>
+      {appUser?.googleCalendar?.approved ? (
+        <div className="mb-4">
+          <SyncClient />
+        </div>
+      ) : null}
+
+      <p className="text-sm text-white/70">
         Depois de escolher a agenda, o admin precisa aprovar o vínculo (email ↔ profissional do Konsist).
       </p>
     </div>

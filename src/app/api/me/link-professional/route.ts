@@ -11,16 +11,19 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json().catch(() => null);
-  const konsistMedicoNome = String((body as any)?.konsistMedicoNome || "").trim();
+  const requestedProfessional = String((body as any)?.konsistMedicoNome || (body as any)?.requestedProfessional || "").trim();
 
-  if (!konsistMedicoNome) {
+  if (!requestedProfessional) {
     return NextResponse.json({ ok: false, error: "missing_professional" }, { status: 400 });
   }
 
-  await prisma.user.update({
-    where: { email: session.user.email },
-    data: { konsistMedicoNome },
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!user) return NextResponse.json({ ok: false, error: "user_not_found" }, { status: 404 });
+
+  // Agora o vínculo é via aprovação do MASTER.
+  await prisma.professionalLinkRequest.create({
+    data: { userId: user.id, requestedProfessional, status: "PENDING" },
   });
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, pending: true });
 }

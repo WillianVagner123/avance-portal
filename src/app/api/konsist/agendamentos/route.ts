@@ -1,6 +1,8 @@
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 function fmtYYYYMMDD(d: Date) {
   const y = d.getFullYear();
@@ -11,6 +13,23 @@ function fmtYYYYMMDD(d: Date) {
 
 export async function GET(req: Request) {
   try {
+    const session: any = await getServerSession(authOptions);
+    const appUser = session?.appUser;
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+    }
+    if (!appUser || (appUser.status !== "ACTIVE" && appUser.role !== "MASTER")) {
+      return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
+    }
+
+    const role = appUser.role as string;
+    const linkedProfessional = String(appUser.konsistMedicoNome || "").trim();
+    if (role !== "MASTER" && !linkedProfessional) {
+      // Profissional sem vínculo -> não pode ver agendamentos
+      return NextResponse.json({ ok: false, error: "no_professional_link" }, { status: 403 });
+    }
+
     const base = process.env.KONSIST_API_BASE || "";
     const endpoint = process.env.KONSIST_ENDPOINT_AGENDAMENTOS || "";
     const bearer = process.env.KONSIST_BEARER || "";
@@ -72,6 +91,23 @@ export async function GET(req: Request) {
         { ok: false, error: "Konsist retornou erro", status: resp.status, data: parsed },
         { status: resp.status }
       );
+    }
+
+    // ✅ filtra no servidor para PROFISSIONAL (evita vazar agenda de outros)
+    if (role !== "MASTER") {
+      const norm = (s: string) => s.trim().toLowerCase();
+      const target = norm(linkedProfessional);
+
+      const filterArr = (arr: any[]) =>
+        arr.filter((it) => norm(String(it?.agendamento_medico || it?.profissional || "")) === target);
+
+      if (Array.isArray(parsed?.Resultado)) {
+        parsed.Resultado = filterArr(parsed.Resultado);
+      } else if (Array.isArray(parsed?.resultado)) {
+        parsed.resultado = filterArr(parsed.resultado);
+      } else if (Array.isArray(parsed)) {
+        parsed = filterArr(parsed);
+      }
     }
 
     return NextResponse.json({ ok: true, range: { datai, dataf }, data: parsed });

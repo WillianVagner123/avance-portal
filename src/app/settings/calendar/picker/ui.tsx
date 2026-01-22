@@ -27,28 +27,24 @@ export default function PickerClient() {
     })();
   }, []);
 
-  if (loading) return <div style={{ padding: 24 }}>Carregando…</div>;
+  if (loading) return <div className="p-6">Carregando…</div>;
 
   const selectedName = calendars.find((c) => c.id === selectedId)?.summary || "";
 
   return (
-    <div style={{ padding: 24, maxWidth: 900, margin: "0 auto" }}>
-      <h1 style={{ fontSize: 20, marginBottom: 10 }}>Selecione sua agenda</h1>
+    <div className="mx-auto w-full max-w-2xl p-4 sm:p-6">
+      <h1 className="text-lg font-black mb-2">Selecione sua agenda</h1>
 
-      <div style={{ opacity: 0.8, marginBottom: 14 }}>
+      <div className="text-sm text-white/70 mb-4">
         Aprovação do admin: {approved ? "✅ Aprovado" : "⏳ Pendente"}
       </div>
 
-      <form
-        method="post"
-        action="/api/google/select-calendar"
-        style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}
-      >
+      <form method="post" action="/api/google/select-calendar" className="flex flex-col sm:flex-row gap-3 sm:items-center">
         <select
           name="calendarId"
           value={selectedId}
           onChange={(e) => setSelectedId(e.target.value)}
-          style={{ padding: 10, borderRadius: 10, minWidth: 360 }}
+          className="w-full sm:flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white"
         >
           <option value="">-- Escolha --</option>
           {calendars.map((c) => (
@@ -60,15 +56,15 @@ export default function PickerClient() {
         </select>
 
         <input type="hidden" name="calendarName" value={selectedName} />
-        <button type="submit" style={{ padding: "10px 12px", borderRadius: 10 }}>
-          Salvar
-        </button>
-        <a
-          href="/settings/calendar"
-          style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)", display: "inline-block" }}
-        >
-          Voltar
-        </a>
+
+        <div className="flex gap-3">
+          <button type="submit" className="rounded-xl border border-white/10 bg-blue-600 px-4 py-2 text-sm font-extrabold text-white hover:bg-blue-700">
+            Salvar
+          </button>
+          <a href="/settings/calendar" className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-extrabold hover:bg-white/10">
+            Voltar
+          </a>
+        </div>
       </form>
     </div>
   );

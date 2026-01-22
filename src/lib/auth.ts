@@ -114,12 +114,27 @@ export const authOptions: NextAuthOptions = {
         ? await prisma.googleCalendarLink.findUnique({ where: { userId: user.id } }).catch(() => null)
         : null;
 
+      const lastProfessionalReq = user
+        ? await prisma.professionalLinkRequest.findFirst({
+            where: { userId: user.id },
+            orderBy: { createdAt: "desc" },
+          }).catch(() => null)
+        : null;
+
       (session as any).appUser = user
         ? {
             id: user.id,
             status: user.status,
             role: user.role,
             konsistMedicoNome: user.konsistMedicoNome,
+            professionalLinkRequest: lastProfessionalReq
+              ? {
+                  status: lastProfessionalReq.status,
+                  requestedProfessional: lastProfessionalReq.requestedProfessional,
+                  approvedProfessional: lastProfessionalReq.approvedProfessional,
+                  createdAt: lastProfessionalReq.createdAt,
+                }
+              : null,
             googleCalendar: link
               ? {
                   approved: link.approved,

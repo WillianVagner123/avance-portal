@@ -20,10 +20,15 @@ export async function POST(req: Request) {
 
   if (!calendarId) return NextResponse.json({ error: "Missing calendarId" }, { status: 400 });
 
-  await prisma.googleCalendarLink.upsert({
-    where: { userId: appUser.id },
-    create: { userId: appUser.id, calendarId, calendarName, approved: false },
-    update: { calendarId, calendarName, approved: false },
+  await prisma.$transaction(async (tx) => {
+    await tx.googleCalendarLink.upsert({
+      where: { userId: appUser.id },
+      create: { userId: appUser.id, calendarId, calendarName, approved: false, syncToken: null },
+      update: { calendarId, calendarName, approved: false, syncToken: null },
+    });
+
+    // Limpa eventos antigos (se trocou de agenda)
+    await tx.googleCalendarEvent.deleteMany({ where: { userId: appUser.id } });
   });
 
   return NextResponse.redirect(new URL("/settings/calendar", req.url));
