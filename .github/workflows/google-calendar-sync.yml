@@ -22,4 +22,14 @@ jobs:
           echo "Calling: $SYNC_URL"
           curl -fsS -X POST "$SYNC_URL" \
             -H "x-sync-secret: $SYNC_SECRET"
-123123123123123123
+
+# The trailing digits above were accidentally committed and break the YAML file.
+# They have been removed so that the workflow is valid. The workflow calls
+# your Cloud Run service’s Google Calendar sync endpoint on a five‑minute
+# schedule. To enable this workflow, configure the following repository
+# secrets on GitHub:
+#
+#   SYNC_URL    – full URL of the Cloud Run sync endpoint (for example
+#                 https://your-service-url/run/api/google/sync)
+#   SYNC_SECRET – the same value used for the SYNC_SECRET environment
+#                 variable on your Cloud Run deployment.
