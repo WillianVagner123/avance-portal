@@ -1,15 +1,8 @@
-name: Deploy to Cloud Run
-
-# This workflow builds a Docker image for the Next.js application,
-# pushes it to Artifact Registry and deploys it to Cloud Run whenever
-# code is pushed to the `main` branch. It relies on a service
-# account key stored as a GitHub secret and a number of other
-# configuration secrets described below.
+﻿name: Deploy to Cloud Run
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   build-and-deploy:
@@ -26,7 +19,7 @@ jobs:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
 
-      - name: Configure Docker for Artifact Registry
+      - name: Configure Docker for Artifact Registry
         run: |
           gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
 
@@ -36,7 +29,7 @@ jobs:
           docker build -t "$IMAGE" .
           docker push "$IMAGE"
 
-      - name: Deploy to Cloud Run
+      - name: Deploy to Cloud Run
         run: |
           IMAGE="${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ secrets.GCP_REPOSITORY }}/avance-portal:${GITHUB_SHA}"
           gcloud run deploy ${{ secrets.CLOUDRUN_SERVICE }} \
@@ -45,24 +38,5 @@ jobs:
             --platform managed \
             --allow-unauthenticated \
             --max-instances 3 \
-            --set-env-vars "NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }},NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }},AUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }},MASTER_EMAIL=${{ secrets.MASTER_EMAIL }},GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},DATABASE_URL=${{ secrets.DATABASE_URL }},KONSIST_API_BASE=${{ secrets.KONSIST_API_BASE }},KONSIST_ENDPOINT_AGENDAMENTOS=${{ secrets.KONSIST_ENDPOINT_AGENDAMENTOS }},KONSIST_BEARER=${{ secrets.KONSIST_BEARER }},SYNC_SECRET=${{ secrets.SYNC_SECRET }}"
-
-    # To enable this workflow, define the following repository secrets:
-    #
-    # GCP_PROJECT            – your Google Cloud project ID
-    # GCP_REGION             – the region where Cloud Run is hosted (e.g. southamerica-east1)
-    # GCP_REPOSITORY         – name of your Artifact Registry repository (create one if needed)
-    # CLOUDRUN_SERVICE       – name of the Cloud Run service to deploy
-    # GCP_SA_KEY             – JSON key of a service account with the roles
-    #                          Cloud Run Admin, Artifact Registry Writer and
-    #                          IAM Service Account User
-    # NEXTAUTH_URL           – base URL of your deployed app, e.g. https://avance-portal-<project>.run.app
-    # NEXTAUTH_SECRET        – secret used by NextAuth (32‑char random value)
-    # MASTER_EMAIL           – administrator email address
-    # GOOGLE_CLIENT_ID       – Google OAuth client ID
-    # GOOGLE_CLIENT_SECRET   – Google OAuth client secret
-    # DATABASE_URL           – PostgreSQL connection string
-    # KONSIST_API_BASE       – base URL for the Konsist API
-    # KONSIST_ENDPOINT_AGENDAMENTOS – API path for Konsist appointments
-    # KONSIST_BEARER         – bearer token for Konsist API
-    # SYNC_SECRET            – secret used by the Google Calendar sync endpoint
+            --set-env-vars "NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }},NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }},AUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }},MASTER_EMAIL=${{ secrets.MASTER_EMAIL }},GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},DATABASE_URL=${{ secrets.DATABASE_URL }},KONSIST_API_BASE=${{ secrets.KONSIST_API_BASE }},KONSIST_ENDPOINT_AGENDAMENTOS=${{ secrets.KONSIST_ENDPOINT_AGENDAMENTOS }},KONSIST_BEARER=${{ secrets.KONSIST_BEARER }},AUTH_TRUST_HOST=true,NODE_TLS_REJECT_UNAUTHORIZED=0" \
+            --update-secrets "SYNC_SECRET=SYNC_SECRET:latest"
