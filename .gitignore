@@ -54,3 +54,10 @@ build.out
 
 *.bak.*
 trace-deprecation.log
+
+# Security
+*.key.json
+github-deployer-key.json
+cloudrun_*.yaml
+.env
+
