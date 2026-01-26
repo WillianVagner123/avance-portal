@@ -61,3 +61,8 @@ github-deployer-key.json
 cloudrun_*.yaml
 .env
 
+
+# GCP keys
+*key*.json
+github-deployer-key.json
+
