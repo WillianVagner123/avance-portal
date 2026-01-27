@@ -24,6 +24,7 @@ model User {
   status            UserStatus @default(PENDING)
   role              UserRole   @default(PROFESSIONAL)
   konsistMedicoNome String?
+  passwordResetTokens PasswordResetToken[]
 
   /// A hashed password for credentials based authentication.
   /// When a user registers using email/password, we store the password
