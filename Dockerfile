@@ -14,7 +14,7 @@ ENV NEXTAUTH_SECRET="build_dummy"
 ENV DATABASE_URL="build_dummy"
 
 
-RUN npm install --omit=dev
+RUN npm install
 COPY . .
 RUN npm run build
 
