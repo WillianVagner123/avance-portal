@@ -1,8 +1,8 @@
 export const runtime = "nodejs";
 
+import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
 
 /**
  * API route used for user registration.  It accepts a JSON body with
