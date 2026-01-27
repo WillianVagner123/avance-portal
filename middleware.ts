@@ -1,34 +1,29 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
 
-const PUBLIC_PREFIXES = [
+const PUBLIC_PATHS = [
   "/login",
-  "/pending",
-  "/logout",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
   "/api/auth",
-  "/favicon.ico",
-  "/api/google/sync",
-  // Allow the custom OAuth routes for linking Google calendars to bypass
-  // authentication.  These endpoints implement their own session
-  // checks and must remain reachable by Google's redirect callbacks.
-  "/api/google/authorize",
   "/api/google/callback",
 ];
 
-export async function middleware(req: NextRequest) {
+export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  if (pathname.startsWith("/_next") || pathname.startsWith("/assets")) {
+  // ✅ libera rotas públicas
+  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
     return NextResponse.next();
   }
 
-  if (PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(p) || pathname.startsWith(p + "/"))) {
-    return NextResponse.next();
-  }
+  const hasSession =
+    req.cookies.get("__Secure-next-auth.session-token") ||
+    req.cookies.get("next-auth.session-token");
 
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-  if (!token?.email) {
+  // ❌ não logado → login
+  if (!hasSession) {
     const url = req.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
@@ -38,5 +33,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next|favicon.ico|assets).*)"],
 };

@@ -131,3 +131,14 @@ model ProfessionalLinkRequest {
 
   @@index([userId, status])
 }
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
