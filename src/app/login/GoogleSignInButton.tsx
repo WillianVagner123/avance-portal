@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { signIn } from "next-auth/react";
+// This component previously started a NextAuth sign‑in with Google.  After
+// migrating to credentials based authentication we no longer use
+// NextAuth's Google provider for login.  Instead we redirect the user
+// to our custom OAuth2 initiation endpoint which links their Google
+// calendar.  This component is unused in the current login page but
+// remains for potential future use (e.g. linking from other areas of
+// the app).
 
 export default function GoogleSignInButton() {
   const [loading, setLoading] = useState(false);
@@ -9,15 +15,13 @@ export default function GoogleSignInButton() {
   async function handle() {
     try {
       setLoading(true);
-
-      // Você pode trocar callbackUrl se quiser mandar direto p/ dashboard/admin
-      await signIn("google", { callbackUrl: "/dashboard" });
-
-      // Observação: normalmente o browser redireciona imediatamente
-      // então não precisa setLoading(false) aqui.
+      // Redirect to our Google authorization route.  This triggers the
+      // OAuth2 flow for calendar linking.  It does not log the user
+      // into the application.
+      window.location.href = "/api/google/authorize";
     } catch (e) {
       setLoading(false);
-      alert("Falha ao iniciar login com Google.");
+      alert("Falha ao iniciar autorização com o Google.");
     }
   }
 

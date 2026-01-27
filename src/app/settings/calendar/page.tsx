@@ -34,7 +34,7 @@ export default async function SettingsCalendarPage() {
 
       <div className="flex flex-col sm:flex-row gap-3 flex-wrap mb-4">
         <a
-          href="/api/auth/signin/google"
+          href="/api/google/authorize"
           className="inline-block rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-extrabold hover:bg-white/10"
         >
           Reautorizar Google (Calendar)

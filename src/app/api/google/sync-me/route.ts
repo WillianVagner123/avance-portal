@@ -13,12 +13,17 @@ function mustEnv(name: string) {
 }
 
 function makeOAuthClient() {
+  // Derive the redirect URI used when exchanging authorization codes.  If
+  // GOOGLE_REDIRECT_URI is set, use it; otherwise fall back to the
+  // deployed base URL with our custom callback path.  This URI is not
+  // needed for token refresh operations but must match the URI used
+  // during the original authorization.
   const baseUrl = mustEnv("NEXTAUTH_URL").replace(/\/$/, "");
-  const redirectUri = `${baseUrl}/api/auth/callback/google`;
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${baseUrl}/api/google/callback`;
   return new google.auth.OAuth2(
     mustEnv("GOOGLE_CLIENT_ID"),
     mustEnv("GOOGLE_CLIENT_SECRET"),
-    redirectUri
+    redirectUri,
   );
 }
 

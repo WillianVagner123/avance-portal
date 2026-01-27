@@ -1,55 +1,54 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 /**
- * LoginPage renders a credentials based login form.  Users enter their email
- * and password and the form uses NextAuth to attempt a sign in via the
- * "credentials" provider.  On success it redirects to the dashboard,
- * otherwise it surfaces an error message.  The design retains the original
- * background and card aesthetic while being fully responsive for mobile.
+ * RegisterPage allows new professionals to create an account using their
+ * email, optional name and password.  Upon successful registration the
+ * account remains pending until approved by an administrator.  After
+ * registration completes the user is automatically logged in and
+ * redirected to the dashboard.
  */
-export default function LoginPage() {
+export default function RegisterPage() {
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const urlError = searchParams.get("error");
-
-  // Normalize any incoming NextAuth error query parameters into a human
-  // friendly message.  For example, when a session expires the user will
-  // be redirected to /login?error=SessionRequired.
-  const deriveError = () => {
-    if (errorMsg) return errorMsg;
-    if (urlError === "CredentialsSignin") {
-      return "Credenciais inválidas. Verifique seu email e senha.";
-    }
-    if (urlError === "AccessDenied") {
-      return "Acesso negado.";
-    }
-    return null;
-  };
-  const shownError = deriveError();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setErrorMsg(null);
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-    setSubmitting(false);
-    if (res?.ok) {
-      // Navigate to the dashboard on success.
-      router.push("/dashboard");
-    } else {
-      setErrorMsg("Credenciais inválidas. Verifique seu email e senha.");
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, name, password }),
+      });
+      if (res.ok) {
+        // sign in immediately after registration
+        const result = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
+        if (result?.ok) {
+          router.push("/dashboard");
+        } else {
+          router.push("/login");
+        }
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setErrorMsg(data.error || "Erro ao registrar. Tente novamente.");
+      }
+    } catch (err) {
+      setErrorMsg("Erro inesperado ao registrar.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -63,10 +62,8 @@ export default function LoginPage() {
             "url('https://images.unsplash.com/photo-1631248055158-edec7a3c072b?q=80&w=1161&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
         }}
       />
-
       {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/90" />
-
       {/* Card */}
       <div className="relative z-10 w-full max-w-sm rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl p-8">
         <div className="mb-6 text-center">
@@ -74,14 +71,25 @@ export default function LoginPage() {
             A
           </div>
           <h1 className="text-2xl font-semibold text-white">Clínica Avance</h1>
-          <p className="mt-1 text-sm text-zinc-300">Portal interno de profissionais</p>
+          <p className="mt-1 text-sm text-zinc-300">Crie sua conta de profissional</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {shownError ? (
-            <div className="text-red-400 text-sm text-center">
-              {shownError}
-            </div>
+          {errorMsg ? (
+            <div className="text-red-400 text-sm text-center">{errorMsg}</div>
           ) : null}
+          <div>
+            <label className="block text-sm font-medium text-white/80 mb-1" htmlFor="name">
+              Nome (opcional)
+            </label>
+            <input
+              id="name"
+              type="text"
+              className="w-full rounded-lg border border-white/30 bg-transparent px-3 py-2 text-sm text-white placeholder-white/50 focus:border-white/50 focus:outline-none"
+              placeholder="Seu nome"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-white/80 mb-1" htmlFor="email">
               Email
@@ -115,12 +123,12 @@ export default function LoginPage() {
             disabled={submitting}
             className="w-full rounded-xl bg-white text-zinc-900 px-4 py-3 text-sm font-medium hover:bg-zinc-200 transition disabled:opacity-50"
           >
-            {submitting ? "Entrando..." : "Entrar"}
+            {submitting ? "Registrando..." : "Registrar"}
           </button>
           <p className="text-center text-xs text-zinc-400">
-            Não possui conta?{' '}
-            <a href="/register" className="underline hover:text-white">
-              Registrar
+            Já tem uma conta?{' '}
+            <a href="/login" className="underline hover:text-white">
+              Entrar
             </a>
           </p>
         </form>
