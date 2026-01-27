@@ -2,10 +2,12 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
-const globalForPrisma = globalThis as unknown as {
-  prisma?: PrismaClient;
-  pgPool?: Pool;
-};
+declare global {
+  // eslint-disable-next-line no-var
+  var __prisma: PrismaClient | undefined;
+  // eslint-disable-next-line no-var
+  var __pgPool: Pool | undefined;
+}
 
 function mustEnv(name: string) {
   const v = process.env[name];
@@ -14,20 +16,17 @@ function mustEnv(name: string) {
 }
 
 export const prisma =
-  globalForPrisma.prisma ??
+  global.__prisma ??
   (() => {
-   const pool =
-  globalForPrisma.pgPool ??
-  new Pool({
-    connectionString: mustEnv("DATABASE_URL"),
-    ssl: {
-      rejectUnauthorized: false, // 👈 ISSO resolve o P1011
-    },
-    max: 1, // 👈 essencial para o Pooler
-  });
+    const pool =
+      global.__pgPool ??
+      new Pool({
+        connectionString: mustEnv("DATABASE_URL"),
+        ssl: { rejectUnauthorized: false },
+        max: 1,
+      });
 
-
-    globalForPrisma.pgPool = pool;
+    global.__pgPool = pool;
 
     return new PrismaClient({
       adapter: new PrismaPg(pool),
@@ -36,5 +35,5 @@ export const prisma =
   })();
 
 if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
+  global.__prisma = prisma;
 }
