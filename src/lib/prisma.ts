@@ -16,11 +16,16 @@ function mustEnv(name: string) {
 export const prisma =
   globalForPrisma.prisma ??
   (() => {
-    const pool =
-      globalForPrisma.pgPool ??
-      new Pool({
-        connectionString: mustEnv("DATABASE_URL"),
-      });
+   const pool =
+  globalForPrisma.pgPool ??
+  new Pool({
+    connectionString: mustEnv("DATABASE_URL"),
+    ssl: {
+      rejectUnauthorized: false, // 👈 ISSO resolve o P1011
+    },
+    max: 1, // 👈 essencial para o Pooler
+  });
+
 
     globalForPrisma.pgPool = pool;
 
