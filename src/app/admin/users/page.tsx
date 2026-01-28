@@ -1,16 +1,17 @@
-export const dynamic = "force-dynamic";
+﻿export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const runtime = "nodejs";
+import { getPrisma } from "@/lib/getPrisma";
 
-import { prisma } from "@/lib/prisma";
 
 export default async function AdminUsers() {
+  const prisma = await getPrisma();
   const users = await prisma.user.findMany({ orderBy: { createdAt: "desc" } });
 
   return (
     <div>
-      <h1 style={{ fontSize: 22, marginBottom: 12 }}>Usuários</h1>
+      <h1 style={{ fontSize: 22, marginBottom: 12 }}>UsuÃ¡rios</h1>
 
       <div style={{ display: "grid", gap: 12 }}>
         {users.map((u) => (
@@ -26,7 +27,7 @@ export default async function AdminUsers() {
               <div>
                 <div style={{ fontWeight: 700 }}>{u.email}</div>
                 <div style={{ opacity: 0.85 }}>
-                  {u.name || "-"} • role: {u.role} • status: {u.status}
+                  {u.name || "-"} â€¢ role: {u.role} â€¢ status: {u.status}
                 </div>
               </div>
 
@@ -58,3 +59,5 @@ export default async function AdminUsers() {
     </div>
   );
 }
+
+

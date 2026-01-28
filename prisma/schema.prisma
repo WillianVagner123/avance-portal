@@ -25,11 +25,6 @@ model User {
   role              UserRole   @default(PROFESSIONAL)
   konsistMedicoNome String?
   passwordResetTokens PasswordResetToken[]
-
-  /// A hashed password for credentials based authentication.
-  /// When a user registers using email/password, we store the password
-  /// here using a secure hashing algorithm (bcrypt).  This field is optional
-  /// to preserve backwards compatibility with Google‑authenticated accounts.
   password String?
 
   createdAt DateTime @default(now())

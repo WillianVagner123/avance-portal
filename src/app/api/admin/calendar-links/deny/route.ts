@@ -1,32 +1,10 @@
-export const runtime = "nodejs";
-
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/getPrisma";
 
-export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  const role = (session as any)?.appUser?.role;
-  const actorEmail = (session?.user?.email || "").toLowerCase();
-
-  if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (role !== "MASTER") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-
-  const fd = await req.formData();
-  const userId = String(fd.get("userId") || "");
-  if (!userId) return NextResponse.json({ error: "Missing userId" }, { status: 400 });
-
-  await prisma.googleCalendarLink.update({
-    where: { userId },
-    data: { approved: false },
-  });
-
-  // Se revogou, remove também o vínculo efetivo no portal
-  await prisma.user.update({
-    where: { id: userId },
-    data: { konsistMedicoNome: null },
-  });
-
-  return NextResponse.redirect(new URL("/admin/calendar-links", req.url));
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export async function GET() {
+  return NextResponse.json({ ok: true });
 }

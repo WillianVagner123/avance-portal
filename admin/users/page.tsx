@@ -1,12 +1,15 @@
-export const dynamic = "force-dynamic";
+﻿export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
 export const runtime = "nodejs";
 
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/getPrisma";
 
 export default async function AdminUsers() {
-  const users = await prisma.user.findMany({ orderBy: { createdAt: "desc" } });
+  const prisma = await getPrisma();
+
+  const users = await prisma.user.findMany({
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <div>
@@ -50,7 +53,7 @@ export default async function AdminUsers() {
             </div>
 
             <div style={{ opacity: 0.7, marginTop: 8 }}>
-              criado: {new Date(u.createdAt).toLocaleString()}
+              criado: {new Date(u.createdAt).toLocaleString("pt-BR")}
             </div>
           </div>
         ))}

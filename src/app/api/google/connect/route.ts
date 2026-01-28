@@ -1,12 +1,10 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { getPrisma } from "@/lib/getPrisma";
 
-/**
- * Legacy endpoint kept for backwards compatibility.  Previously this route
- * redirected to NextAuth's Google sign‑in URL.  Now it redirects to our
- * custom authorization endpoint which initiates the Google OAuth flow for
- * calendar access.
- */
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export async function GET() {
-  const base = process.env.NEXTAUTH_URL || "";
-  return NextResponse.redirect(new URL("/api/google/authorize", base));
+  return NextResponse.json({ ok: true });
 }

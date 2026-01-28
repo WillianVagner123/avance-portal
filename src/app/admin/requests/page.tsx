@@ -1,10 +1,10 @@
-export const runtime = "nodejs";
+﻿export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/getPrisma";
 
 export default async function AdminRequests() {
+  const prisma = await getPrisma();
   const requests = await prisma.accessRequest.findMany({
     where: { status: "PENDING" },
     orderBy: { createdAt: "asc" },
@@ -29,7 +29,7 @@ export default async function AdminRequests() {
             >
               <div style={{ fontWeight: 700 }}>{r.email}</div>
               <div style={{ opacity: 0.85, marginBottom: 10 }}>
-                Nome: {r.name || "-"} • Criado em: {new Date(r.createdAt).toLocaleString()}
+                Nome: {r.name || "-"} â€¢ Criado em: {new Date(r.createdAt).toLocaleString()}
               </div>
 
               <div style={{ display: "flex", gap: 8 }}>
@@ -54,3 +54,5 @@ export default async function AdminRequests() {
     </div>
   );
 }
+
+

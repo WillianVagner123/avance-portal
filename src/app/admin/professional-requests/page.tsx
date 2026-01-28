@@ -1,10 +1,11 @@
-export const runtime = "nodejs";
+﻿export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+import { getPrisma } from "@/lib/getPrisma";
 
-import { prisma } from "@/lib/prisma";
 
 export default async function AdminProfessionalRequests() {
+  const prisma = await getPrisma();
   const requests = await prisma.professionalLinkRequest.findMany({
     where: { status: "PENDING" },
     include: { user: true },
@@ -13,7 +14,7 @@ export default async function AdminProfessionalRequests() {
 
   return (
     <div className="mx-auto w-full max-w-5xl p-4 sm:p-6">
-      <h1 className="text-xl font-black mb-2">Pedidos de vínculo de profissional (Konsist)</h1>
+      <h1 className="text-xl font-black mb-2">Pedidos de vÃ­nculo de profissional (Konsist)</h1>
       <p className="text-sm text-white/70 mb-4">
         O profissional solicita qual agenda do Konsist ele deve ver. Aqui o MASTER aprova/nega.
       </p>
@@ -59,3 +60,5 @@ export default async function AdminProfessionalRequests() {
     </div>
   );
 }
+
+

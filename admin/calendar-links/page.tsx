@@ -1,22 +1,22 @@
-export const runtime = "nodejs";
+﻿export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/getPrisma";
 
 export default async function AdminCalendarLinksPage() {
-  const links = await prisma.googleCalendarLink.findMany({
+  const links = await (await getPrisma()).googleCalendarLink.findMany({
     include: { user: true },
     orderBy: { updatedAt: "desc" },
   });
 
-  const maps = await prisma.konsistProfessionalMap.findMany();
+  const maps = await (await getPrisma()).konsistProfessionalMap.findMany();
   const mapByUserId = new Map(maps.map((m: (typeof maps)[number]) => [m.userId, m]));
 
   return (
     <div className="mx-auto w-full max-w-5xl p-4 sm:p-6">
-      <h1 className="text-xl font-black mb-2">Autorizar vínculo (Email ↔ Profissional)</h1>
+      <h1 className="text-xl font-black mb-2">Autorizar vÃ­nculo (Email â†” Profissional)</h1>
       <p className="text-sm text-white/70 mb-4">
-        O profissional escolhe a agenda dele. Aqui o MASTER valida e aprova o vínculo com o nome do profissional no Konsist.
+        O profissional escolhe a agenda dele. Aqui o MASTER valida e aprova o vÃ­nculo com o nome do profissional no Konsist.
       </p>
 
       <div className="grid gap-3">
@@ -30,9 +30,9 @@ export default async function AdminCalendarLinksPage() {
               <div className="font-extrabold">{l.user.email}</div>
               <div className="text-sm text-white/75 mt-2">
                 Agenda: {l.calendarName || "-"} ({l.calendarId || "-"})<br />
-                Refresh token: {l.refreshToken ? "✅" : "⚠️ (reauthorize)"}<br />
+                Refresh token: {l.refreshToken ? "âœ…" : "âš ï¸ (reauthorize)"}<br />
                 Profissional (Konsist): {(m as any)?.konsistProfissionalNome || "-"}<br />
-                Aprovado: {l.approved ? "✅ SIM" : "⏳ NÃO"}
+                Aprovado: {l.approved ? "âœ… SIM" : "â³ NÃƒO"}
               </div>
 
               <div className="mt-3 flex flex-col gap-2">
@@ -69,3 +69,4 @@ export default async function AdminCalendarLinksPage() {
     </div>
   );
 }
+
