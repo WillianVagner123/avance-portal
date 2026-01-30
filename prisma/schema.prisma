@@ -34,9 +34,10 @@ model User {
 
   professionalLinkRequests ProfessionalLinkRequest[]
 
-  googleCalendarLink     GoogleCalendarLink?
-  konsistProfessionalMap KonsistProfessionalMap?
-  googleCalendarEvents   GoogleCalendarEvent[]
+  googleCalendarLink       GoogleCalendarLink?
+  konsistProfessionalMap   KonsistProfessionalMap?
+  googleCalendarEvents     GoogleCalendarEvent[]
+  konsistAppointmentLinks KonsistAppointmentLink[]
 }
 
 enum RequestStatus {
@@ -127,6 +128,7 @@ model ProfessionalLinkRequest {
 
   @@index([userId, status])
 }
+
 model PasswordResetToken {
   id        String   @id @default(uuid())
   userId    String
@@ -136,5 +138,24 @@ model PasswordResetToken {
 
   user User @relation(fields: [userId], references: [id])
 
+model KonsistAppointmentLink {
+  id String @id @default(cuid())
+
+  userId     String
+  konsistKey String
+
+  googleEventId String?
+  calendarId    String?
+
+  statusNorm String?
+  start      DateTime?
+  end        DateTime?
+
+  lastSeenAt DateTime @default(now())
+  payload    Json?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, konsistKey], name: "userId_konsistKey")
   @@index([userId])
 }

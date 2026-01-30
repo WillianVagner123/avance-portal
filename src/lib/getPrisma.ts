@@ -1,32 +1,23 @@
-﻿import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
 declare global {
-  // evita múltiplas instâncias
+  // evita múltiplas instâncias no dev / Cloud Run
   // eslint-disable-next-line no-var
   var prisma: PrismaClient | undefined;
 }
 
-function createPrismaClient() {
-  const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: false,
-    },
-  });
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+});
 
-  const adapter = new PrismaPg(pool);
+const adapter = new PrismaPg(pool);
 
-  return new PrismaClient({
-    adapter,
-  });
-}
-
-export function getPrisma() {
+export const getPrisma = () => {
   if (!global.prisma) {
-    global.prisma = createPrismaClient();
+    global.prisma = new PrismaClient({ adapter });
   }
-
   return global.prisma;
-}
+};
