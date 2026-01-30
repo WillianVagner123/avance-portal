@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { getPrisma } from "@/lib/getPrisma";
 
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
     }
 
     const normalizedEmail = email.toLowerCase();
-
+    const hashed = await bcrypt.hash(password, 10);
    const existing = await prisma.user.findUnique({
   where: { email: email.toLowerCase() },
 });

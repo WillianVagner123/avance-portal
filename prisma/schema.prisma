@@ -6,6 +6,312 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id                String             @id @default(cuid())
+  email             String             @unique
+  name              String?
+  status            UserStatus         @default(PENDING)
+  role              UserRole           @default(PROFESSIONAL)
+  konsistMedicoNome String?
+  password          String?
+  agendaAccesses    UserAgendaAccess[]
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+}
+
+model AccessRequest {
+  id         String        @id @default(cuid())
+  email      String
+  name       String?
+  status     RequestStatus @default(PENDING)
+  reviewedBy String?
+  reviewedAt DateTime?
+  userId     String?
+  createdAt  DateTime      @default(now())
+}
+
+model GoogleCalendarLink {
+  id           String    @id @default(cuid())
+  userId       String    @unique(map: "GoogleCalendarLink_userId_idx")
+  accessToken  String?
+  refreshToken String?
+  expiryDate   DateTime?
+  approved     Boolean   @default(false)
+  calendarId   String?
+  calendarName String?
+  syncToken    String?
+  approvedAt   DateTime?
+  approvedById String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime @db.Timestamptz(6)
+  used      Boolean  @default(false)
+
+  @@index([userId])
+}
+
+model agendas {
+  agendamento_chave               BigInt              @id
+  idpaciente                      BigInt?
+  paciente                        String?
+  telefone                        String?
+  telefone_normalizado            String?
+  agendamento_medico              String?
+  agendamento_especialidade       String?
+  agendamento_data                DateTime?           @db.Date
+  agendamento_hora                DateTime?           @db.Time(6)
+  agendamento_procedimento        String?
+  agendamento_codigo_procedimento String?
+  agendamento_status              String?
+  empresa_unidade                 String?
+  id_local                        BigInt?
+  marcacoes_json                  Json?
+  raw                             Json?
+  inserted_at                     DateTime?           @db.Timestamptz(6)
+  updated_at                      DateTime?           @db.Timestamptz(6)
+  enviado                         Boolean             @default(false)
+  enviado_em                      DateTime?           @db.Timestamptz(6)
+  enviado_canal                   String?
+  enviado_msg_id                  String?
+  contatos_vinculos               contatos_vinculos[]
+}
+
+model consultas_atendidas {
+  id                              BigInt    @id @default(autoincrement())
+  agendamento_chave               BigInt    @unique
+  idpaciente                      BigInt
+  paciente                        String
+  telefone                        String?
+  agendamento_data                DateTime  @db.Date
+  agendamento_hora                DateTime  @db.Time(6)
+  procedimento                    String?
+  codigo_procedimento             String?
+  unidade                         String?
+  id_local                        Int?
+  created_at                      DateTime? @default(now()) @db.Timestamptz(6)
+  agendamento_medico              String    @default("N/D")
+  agendamento_especialidade       String
+  agendamento_procedimento        String?
+  agendamento_codigo_procedimento String?
+  agendamento_status              String?
+  empresa_unidade                 String?
+  marcacoes_json                  Json?     @default("[]")
+  raw                             Json?     @default("{}")
+  inserted_at                     DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                      DateTime? @default(now()) @db.Timestamptz(6)
+  telefone_normalizado            String?   @default(dbgenerated("regexp_replace(COALESCE(telefone, ''::text), '[^0-9]'::text, ''::text, 'g'::text)"))
+  error                           String?
+  agendamento_status_code         String?
+
+  @@unique([agendamento_chave, idpaciente, agendamento_data, agendamento_hora], map: "ux_consultas_atendidas_natkey")
+  @@index([agendamento_data], map: "consultas_atendidas_data_idx")
+  @@index([idpaciente])
+  @@index([agendamento_medico], map: "consultas_atendidas_medico_idx")
+  @@index([agendamento_status, agendamento_data, agendamento_hora], map: "consultas_atendidas_status_data_idx")
+}
+
+model contatos_vinculos {
+  id                Int       @id @default(autoincrement())
+  user_number       String?   @unique
+  user_name         String?
+  user_profile      String?
+  agente            String?
+  role              String?
+  status            String?
+  email             String?
+  interesse_duvida  String?
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  agendamento_chave BigInt?
+  meta              Json?     @default("{}")
+  session_id        String?   @db.Uuid
+  updated_at        DateTime? @default(now()) @db.Timestamptz(6)
+  enviado           Boolean   @default(false)
+  enviado_em        DateTime? @db.Timestamptz(6)
+  enviado_msg_id    String?
+  agendas           agendas?  @relation(fields: [agendamento_chave], references: [agendamento_chave], map: "fk_agenda")
+
+  @@unique([user_number, agendamento_chave], map: "contatos_vinculos_uk")
+  @@unique([agendamento_chave, user_number], map: "contatos_vinculos_uq_agendamento_user")
+  @@index([user_number])
+}
+
+model fato_agenda_metas_longo {
+  id                       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  data                     DateTime  @db.Date
+  hora                     DateTime? @db.Time(6)
+  paciente                 String?
+  tipo                     String
+  subtipo                  String
+  profissional_principal   String?
+  profissionais_envolvidos String?
+  conjunta                 Boolean?  @default(false)
+  qtd                      Decimal?  @default(1) @db.Decimal
+  modalidade               String?
+  convenio                 String?
+  status                   String?
+  chave                    String
+  inserted_at              DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@unique([chave, tipo, subtipo], map: "fato_agenda_metas_longo_chave_uniq")
+}
+
+model fato_agenda_status_historico {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chave         String
+  tipo          String
+  subtipo       String
+  data          DateTime? @db.Date
+  hora          DateTime? @db.Time(6)
+  paciente      String?
+  status_antigo String?
+  status_novo   String?
+  modalidade    String?
+  convenio      String?
+  qtd           Decimal?  @db.Decimal
+  changed_at    DateTime  @default(now()) @db.Timestamptz(6)
+}
+
+model kpi_goals {
+  id         Int       @id @default(autoincrement())
+  kpi_key    String    @unique
+  goal_value Int
+  updated_at DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model lab_exames_raw {
+  id              BigInt    @id @default(autoincrement())
+  paciente_codigo String?
+  paciente_nome   String
+  paciente_sexo   String?
+  paciente_nasc   DateTime? @db.Date
+  exame_codigo    String?
+  linha_codigo    String?
+  exame_nome      String
+  resultado_bruto String?
+  resultado_txt   String?
+  valor_num       Decimal?  @db.Decimal
+  referencia      String?
+  data_resultado  DateTime  @db.Date
+  laudo_date      DateTime? @db.Date
+  laboratorio     String?
+  fonte_json      Json?
+  created_at      DateTime  @default(now()) @db.Timestamptz(6)
+  laudoDate       DateTime? @db.Date
+}
+
+model pacientes_cache {
+  paciente_key String    @id
+  nome         String?
+  nascimento   DateTime? @db.Date
+  fetched_at   DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model password_reset_tokens {
+  id        String    @id
+  token     String    @unique
+  userid    String
+  expiresat DateTime  @db.Timestamptz(6)
+  createdat DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model sheet_aniversarios_hoje {
+  paciente_key String
+  nome         String?
+  telefone     String?
+  nascimento   DateTime  @db.Date
+  generated_at DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@id([paciente_key, nascimento])
+  @@index([generated_at], map: "ix_sheet_aniv_hoje_gen")
+  @@index([telefone], map: "ix_sheet_aniv_hoje_tel")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model sheet_avaliacao_15d {
+  paciente_key        String
+  nome                String?
+  telefone            String?
+  profissional        String?
+  consulta_data       DateTime  @db.Date
+  elegivel_em         DateTime  @db.Date
+  dias_desde_consulta Int
+  sent                Boolean   @default(false)
+  sent_at             DateTime? @db.Timestamptz(6)
+  generated_at        DateTime  @default(now()) @db.Timestamptz(6)
+  mensagem_enviada    Boolean?  @default(false)
+
+  @@unique([paciente_key, profissional, consulta_data], map: "uq_avaliacao15")
+  @@unique([paciente_key, consulta_data, profissional], map: "ux_sheet_avaliacao_15d")
+  @@index([consulta_data], map: "ix_sheet_15d_dt")
+  @@index([mensagem_enviada], map: "ix_sheet_15d_msg")
+  @@ignore
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model sheet_data {
+  id          Int       @id @default(autoincrement())
+  row_data    Json
+  received_at DateTime? @default(now()) @db.Timestamptz(6)
+  company_id  String?   @db.Uuid
+
+  @@index([company_id], map: "idx_sheet_data_company_id")
+}
+
+model sheet_pacientes_confirmados {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agendamento_chave String    @unique
+  patient_id_hash   String
+  paciente          String?
+  telefone          String?
+  clinic_id         String?   @default("AVANCE")
+  scheduled_start   DateTime? @db.Timestamptz(6)
+  confirmed_at      DateTime  @default(now()) @db.Timestamptz(6)
+  source            String?   @default("status_C")
+  scheduled_date    DateTime? @db.Date
+  confirmed_date    DateTime? @db.Date
+
+  @@index([agendamento_chave], map: "ix_sheet_conf_ag")
+  @@index([confirmed_date], map: "ix_sheet_conf_confirmed_date")
+  @@index([scheduled_date], map: "ix_sheet_conf_scheduled_date")
+  @@index([confirmed_at], map: "ix_sheet_conf_ts")
+}
+
+model sheet_pacientes_unicos {
+  paciente_key String    @id
+  nome         String?
+  telefone     String?
+  nascimento   DateTime? @db.Date
+  first_seen   DateTime? @db.Date
+  last_seen    DateTime? @db.Date
+  updated_at   DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model sheet_recaptacao_90d {
+  paciente_key      String?   @unique(map: "ux_sheet_recaptacao_90d_paciente_key")
+  ultima_data       DateTime? @db.Date
+  dias_desde_ultima Int?
+  generated_at      DateTime? @default(now()) @db.Timestamptz(6)
+  sent              Boolean   @default(false)
+  sent_at           DateTime? @db.Timestamptz(6)
+  nome              String?
+  telefone          String?
+  profissional      String?
+  mensagem          String?
+
+  @@unique([paciente_key, ultima_data], map: "uq_recapt_90d")
+  @@ignore
+}
+
 enum UserStatus {
   PENDING
   ACTIVE
@@ -17,148 +323,26 @@ enum UserRole {
   PROFESSIONAL
 }
 
-model User {
-  id                String     @id @default(cuid())
-  email             String     @unique
-  name              String?
-  status            UserStatus @default(PENDING)
-  role              UserRole   @default(PROFESSIONAL)
-  konsistMedicoNome String?
-  passwordResetTokens PasswordResetToken[]
-  password String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  accessRequests AccessRequest[]
-
-  professionalLinkRequests ProfessionalLinkRequest[]
-
-  googleCalendarLink       GoogleCalendarLink?
-  konsistProfessionalMap   KonsistProfessionalMap?
-  googleCalendarEvents     GoogleCalendarEvent[]
-  konsistAppointmentLinks KonsistAppointmentLink[]
-}
-
 enum RequestStatus {
   PENDING
   APPROVED
   DENIED
 }
 
-model AccessRequest {
-  id     String        @id @default(cuid())
-  email  String
-  name   String?
-  status RequestStatus @default(PENDING)
-
-  reviewedBy String?
-  reviewedAt DateTime?
-
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-}
-
-model GoogleCalendarLink {
-  id           String    @id @default(cuid())
-  userId       String    @unique
-  accessToken  String?
-  refreshToken String?
-  expiryDate   DateTime?
-  approved     Boolean   @default(false)
-  calendarId   String?
-  calendarName String?
-  syncToken    String?
-  approvedAt   DateTime?
-  approvedById String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model GoogleCalendarEvent {
-  id String @id @default(cuid())
-
+model UserAgendaAccess {
+  id            String  @id @default(cuid())
   userId        String
-  googleEventId String
-  calendarId    String
-  status        String?
-  summary       String?
-  start         DateTime?
-  end           DateTime?
-  updated       DateTime?
-  raw           Json?
-
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-  updatedAt2 DateTime @updatedAt
-
-  @@unique([userId, googleEventId], name: "userId_googleEventId")
-}
-
-model KonsistProfessionalMap {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
-
-  konsistProfissionalNome String
-  konsistProfissionalId   String?
+  medicoNome    String? // ex: "EDUARDO DE MELO"
+  especialidade String? // ex: "Nutrição"
+  source        String // "konsist" | "google"
+  ativo         Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-model ProfessionalLinkRequest {
-  id     String        @id @default(cuid())
-  userId String
-  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  requestedProfessional String
-  status               RequestStatus @default(PENDING)
-
-  reviewedBy String?
-  reviewedAt DateTime?
-  approvedProfessional String?
-
-  createdAt DateTime @default(now())
-
-  @@index([userId, status])
-}
-
-model PasswordResetToken {
-  id        String   @id @default(uuid())
-  userId    String
-  tokenHash String
-  expiresAt DateTime
-  used      Boolean  @default(false)
 
   user User @relation(fields: [userId], references: [id])
 
   @@index([userId])
-}
-
-model KonsistAppointmentLink {
-  id String @id @default(cuid())
-
-  userId     String
-  konsistKey String
-
-  googleEventId String?
-  calendarId    String?
-
-  statusNorm String?
-  start      DateTime?
-  end        DateTime?
-
-  lastSeenAt DateTime @default(now())
-  payload    Json?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, konsistKey], name: "userId_konsistKey")
-  @@index([userId])
+  @@index([medicoNome])
+  @@index([especialidade])
 }

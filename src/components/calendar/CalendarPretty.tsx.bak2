@@ -1,15 +1,16 @@
 "use client";
+import React from "react";
 
-// Utility function for building class names. Accepts any number of arguments and
-// filters out falsy values before joining them with a single space. This
-// pattern avoids conditional string concatenation throughout the UI and
-// improves readability when applying multiple conditional classes.
+ Utility function for building class names. Accepts any number of arguments and
+ filters out falsy values before joining them with a single space. This
+ pattern avoids conditional string concatenation throughout the UI and
+ improves readability when applying multiple conditional classes.
 const cx = (...c: any[]) => c.filter(Boolean).join(" ");
 
-// Format a JavaScript Date object into an ISO date string (YYYY-MM-DD). This
-// helper is used throughout the calendar when computing day ranges and
-// comparing dates without caring about time zones. Duplicates of this
-// function in the previous version of the component have been removed.
+ Format a JavaScript Date object into an ISO date string (YYYY-MM-DD). This
+ helper is used throughout the calendar when computing day ranges and
+ comparing dates without caring about time zones. Duplicates of this
+ function in the previous version of the component have been removed.
 function toISODate(d: Date) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -17,11 +18,11 @@ function toISODate(d: Date) {
   return `${y}-${m}-${day}`;
 }
 
-// Convert a Date into a local ISO date‑time string (YYYY-MM-DDTHH:MM:SS)
-// without adjusting for timezone offsets. This helper is used when
-// computing the end of an appointment slot. Note that the native
-// `toISOString()` would convert to UTC and adjust the time – which is not
-// desirable in this context.
+ Convert a Date into a local ISO date‑time string (YYYY-MM-DDTHH:MM:SS)
+ without adjusting for timezone offsets. This helper is used when
+ computing the end of an appointment slot. Note that the native
+ `toISOString()` would convert to UTC and adjust the time – which is not
+ desirable in this context.
 function toLocalISO(dt: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(
@@ -29,31 +30,31 @@ function toLocalISO(dt: Date) {
   )}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;
 }
 
-// -----------------------------------------------------------------------------
-// 🛠 Extractor Helpers
-//
-// The Konsist API sometimes returns date and time fields as objects rather than
-// plain strings. For example `{ data: '01/02/2024' }` or `{ hora: '13:30' }`.
-// Interpolating these objects directly into template strings produces
-// "[object Object]" which then causes invalid date strings when building
-// event start/end times. The functions below attempt to safely extract a
-// string representation from these objects. If no string can be found, they
-// return `fallback` (or `null` when not provided).
+ -----------------------------------------------------------------------------
+ 🛠 Extractor Helpers
+
+ The Konsist API sometimes returns date and time fields as objects rather than
+ plain strings. For example `{ data: '01/02/2024' }` or `{ hora: '13:30' }`.
+ Interpolating these objects directly into template strings produces
+ "[object Object]" which then causes invalid date strings when building
+ event start/end times. The functions below attempt to safely extract a
+ string representation from these objects. If no string can be found, they
+ return `fallback` (or `null` when not provided).
 export function extractValue(value: any, fallback: string | null = null): string | null {
   if (!value) return fallback;
-  // Already a string? return trimmed value
+   Already a string? return trimmed value
   if (typeof value === 'string') return value.trim();
-  // Numbers can be converted to strings
+   Numbers can be converted to strings
   if (typeof value === 'number') return String(value);
   if (typeof value === 'object') {
-    // Keys to check in order of preference
+     Keys to check in order of preference
     const preferredKeys = ['data', 'hora', 'value', 'date', 'time'];
     for (const key of preferredKeys) {
       if (key in value && typeof value[key] === 'string') {
         return value[key].trim();
       }
     }
-    // Fallback: return the first string property
+     Fallback: return the first string property
     for (const k in value) {
       const v = value[k];
       if (typeof v === 'string') {
@@ -78,20 +79,20 @@ type Props = {
   subtitle?: string;
 };
 
-// Helper for adding or subtracting days from a given date.
+ Helper for adding or subtracting days from a given date.
 function addDays(d: Date, n: number) {
   const x = new Date(d);
   x.setDate(x.getDate() + n);
   return x;
 }
 
-// -----------------------------------------------------------------------------
-// 📆 Helpers de mês (fetch)
-//
-// These helpers compute the first and last day of a month (in ISO format),
-// simplify date comparisons and normalisation, and encapsulate minor logic for
-// calendar operations.
-// -----------------------------------------------------------------------------
+ -----------------------------------------------------------------------------
+ 📆 Helpers de mês (fetch)
+
+ These helpers compute the first and last day of a month (in ISO format),
+ simplify date comparisons and normalisation, and encapsulate minor logic for
+ calendar operations.
+ -----------------------------------------------------------------------------
 function startOfMonthISO(d: Date) {
   return toISODate(new Date(d.getFullYear(), d.getMonth(), 1));
 }
@@ -115,15 +116,15 @@ function clampToDay(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
 }
 
-// ----------------------------------------------------------------------------
-// Normalising status values returned by Konsist. Many different labels may map
-// to the same logical state. The previous implementation repeated this logic
-// across multiple functions; here it's centralised for clarity.
-// ----------------------------------------------------------------------------
+ ----------------------------------------------------------------------------
+ Normalising status values returned by Konsist. Many different labels may map
+ to the same logical state. The previous implementation repeated this logic
+ across multiple functions; here it's centralised for clarity.
+ ----------------------------------------------------------------------------
 function normalizeStatus(s: any) {
   const t = String(s || "").trim().toLowerCase();
   if (["confirmado", "c"].includes(t)) return "Confirmado";
-  // remove "Agendado": vira Não Confirmado
+   remove "Agendado": vira Não Confirmado
   if (["agendado", "agendada", ""].includes(t)) return "Não Confirmado";
   if (["desmarcado", "desmarcada", "d", "cancelado", "cancelada"].includes(t)) return "Desmarcado";
   if (["atendido", "realizado", "m"].includes(t)) return "Atendido pelo Medico";
@@ -131,7 +132,7 @@ function normalizeStatus(s: any) {
   return "Não Confirmado";
 }
 
-// Map normalised status strings to a consistent colour palette for the UI.
+ Map normalised status strings to a consistent colour palette for the UI.
 function statusColorNormalized(norm: string) {
   switch (norm) {
     case "Confirmado":
@@ -141,14 +142,14 @@ function statusColorNormalized(norm: string) {
     case "Atendido pelo Medico":
       return "#a855f7";
     case "Bloqueado":
-      return "#94a3b8"; // azul
+      return "#94a3b8";  azul
     case "Não Confirmado":
     default:
       return "#3b82f6";
   }
 }
 
-// Parse a Brazilian date/time string (DD/MM/YYYY HH:mm) into a local ISO string.
+ Parse a Brazilian date/time string (DD/MM/YYYY HH:mm) into a local ISO string.
 function brToISO(dt: string) {
   const m = dt.match(/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})(?:\s+([0-9]{2}):([0-9]{2}))?/);
   if (!m) return dt;
@@ -156,14 +157,14 @@ function brToISO(dt: string) {
   return `${yyyy}-${mm}-${dd}T${hh}:${mi}:00`;
 }
 
-// --------------------------------------------------------------------------------------
-// MiniCalendar component
-// --------------------------------------------------------------------------------------
-// A simple date picker used in the calendar sidebar. It displays a grid of 6x7
-// cells representing days, highlights the current selection and supports
-// navigation across months. When a user clicks on a day, the parent
-// CalendarPretty component will update the visible day in the main view via
-// gotoDate().
+ --------------------------------------------------------------------------------------
+ MiniCalendar component
+ --------------------------------------------------------------------------------------
+ A simple date picker used in the calendar sidebar. It displays a grid of 6x7
+ cells representing days, highlights the current selection and supports
+ navigation across months. When a user clicks on a day, the parent
+ CalendarPretty component will update the visible day in the main view via
+ gotoDate().
 
 function MiniCalendar({
   value,
@@ -185,7 +186,7 @@ function MiniCalendar({
 
   const days = React.useMemo(() => {
     const first = startOfMonth(view);
-    const startDow = first.getDay(); // 0 domingo
+    const startDow = first.getDay();  0 domingo
     const gridStart = new Date(first);
     gridStart.setDate(first.getDate() - startDow);
     const out: Date[] = [];
@@ -261,12 +262,12 @@ function MiniCalendar({
   );
 }
 
-// ----------------------------------------------------------------------------
-// HoverCard component
-// ----------------------------------------------------------------------------
-// Displays a tooltip with patient, professional, status and time information
-// when the user hovers over an appointment on the calendar. This uses
-// absolute positioning relative to the viewport and follows the cursor.
+ ----------------------------------------------------------------------------
+ HoverCard component
+ ----------------------------------------------------------------------------
+ Displays a tooltip with patient, professional, status and time information
+ when the user hovers over an appointment on the calendar. This uses
+ absolute positioning relative to the viewport and follows the cursor.
 type HoverInfo = {
   x: number;
   y: number;
@@ -299,11 +300,11 @@ function HoverCard({ data }: { data: HoverInfo }) {
   );
 }
 
-// ----------------------------------------------------------------------------
-// PatientDrawer component
-// ----------------------------------------------------------------------------
-// Displays more detailed information about an appointment when the user clicks
-// on it. The drawer slides in from the right and can be closed.
+ ----------------------------------------------------------------------------
+ PatientDrawer component
+ ----------------------------------------------------------------------------
+ Displays more detailed information about an appointment when the user clicks
+ on it. The drawer slides in from the right and can be closed.
 type DrawerData = {
   paciente: string;
   profissional: string;
@@ -356,11 +357,11 @@ function PatientDrawer({ open, data, onClose }: { open: boolean; data: DrawerDat
   );
 }
 
-// ----------------------------------------------------------------------------
-// renderEventContent
-// ----------------------------------------------------------------------------
-// Custom renderer for calendar events. It displays the start time (and end
-// time when available) in a small font and a truncated patient name below.
+ ----------------------------------------------------------------------------
+ renderEventContent
+ ----------------------------------------------------------------------------
+ Custom renderer for calendar events. It displays the start time (and end
+ time when available) in a small font and a truncated patient name below.
 function renderEventContent(arg: any) {
   const ex = arg?.event?.extendedProps || {};
   const paciente = String(ex?.paciente || "Paciente").trim();
@@ -379,11 +380,11 @@ function renderEventContent(arg: any) {
   );
 }
 
-// ----------------------------------------------------------------------------
-// ProgressBar
-// ----------------------------------------------------------------------------
-// Displays the progress of prefetching operations. It takes a percentage value
-// and optional subtext describing the current chunk being fetched.
+ ----------------------------------------------------------------------------
+ ProgressBar
+ ----------------------------------------------------------------------------
+ Displays the progress of prefetching operations. It takes a percentage value
+ and optional subtext describing the current chunk being fetched.
 function ProgressBar({ show, label, percent, sub }: { show: boolean; label: string; percent: number; sub?: string }) {
   if (!show) return null;
   return (
@@ -402,16 +403,16 @@ function ProgressBar({ show, label, percent, sub }: { show: boolean; label: stri
   );
 }
 
-// ----------------------------------------------------------------------------
-// CalendarPretty component
-// ----------------------------------------------------------------------------
-// The main calendar component. It handles data fetching, event normalisation,
-// filtering and rendering. It also coordinates the drawer and hover tooltips.
-//
-// This component has been cleaned up: duplicate definitions have been removed,
-// undefined variables have been eliminated, and the Google sync button hooks
-// remain intact. The prefetchRangeInChunks helper has been restored to avoid
-// syntax errors when compiling.
+ ----------------------------------------------------------------------------
+ CalendarPretty component
+ ----------------------------------------------------------------------------
+ The main calendar component. It handles data fetching, event normalisation,
+ filtering and rendering. It also coordinates the drawer and hover tooltips.
+
+ This component has been cleaned up: duplicate definitions have been removed,
+ undefined variables have been eliminated, and the Google sync button hooks
+ remain intact. The prefetchRangeInChunks helper has been restored to avoid
+ syntax errors when compiling.
 export default function CalendarPretty({ mode, title, subtitle }: Props) {
   const mainRef = useRef<FullCalendar | null>(null);
   const [tab, setTab] = useState<"agenda" | "filtros" | "status">("agenda");
@@ -422,18 +423,18 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
   const [status, setStatus] = useState<string>("ALL");
   const [search, setSearch] = useState<string>("");
   const [defaultProfessional, setDefaultProfessional] = useState<string | undefined>(undefined);
-  // sessão / google
+   sessão / google
   const [appUser, setAppUser] = useState<any>(null);
   const [proReq, setProReq] = useState<any>(null);
-  // pedido de vínculo
+   pedido de vínculo
   const [prosList, setProsList] = useState<string[]>([]);
   const [requestProf, setRequestProf] = useState<string>("");
   const [requesting, setRequesting] = useState(false);
   const [reqMsg, setReqMsg] = useState<string>("");
-  // sync manual
+   sync manual
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState<string>("");
-  // progress state
+   progress state
   const [prog, setProg] = useState({ running: false, done: 0, total: 0, current: "" });
   const [datai, setDatai] = useState<string>("");
   const [dataf, setDataf] = useState<string>("");
@@ -443,14 +444,14 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
   const [drawerData, setDrawerData] = useState<DrawerData | null>(null);
   const [chunks, setChunks] = useState<Record<string, KonsistItem[]>>({});
 
-  // Load last selected professional and session info in professional mode.
+   Load last selected professional and session info in professional mode.
   useEffect(() => {
     if (mode !== "professional") return;
     try {
       const saved = window.localStorage.getItem("AVANCE_PRO_SELECTED_PROF");
       if (saved) setProf(saved);
     } catch {
-      // ignore
+       ignore
     }
     fetch("/api/auth/session")
       .then((r) => (r.ok ? r.json() : null))
@@ -466,7 +467,7 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
       .catch(() => {});
   }, [mode]);
 
-  // Fetch list of professionals if no default is set.
+   Fetch list of professionals if no default is set.
   useEffect(() => {
     if (mode !== "professional") return;
     if (defaultProfessional) return;
@@ -487,13 +488,13 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
       .catch(() => {});
   }, [mode, defaultProfessional, requestProf]);
 
-  // Persist selected professional in localStorage for professional mode.
+   Persist selected professional in localStorage for professional mode.
   useEffect(() => {
     if (mode !== "professional") return;
     try {
       if (prof && prof !== "ALL") window.localStorage.setItem("AVANCE_PRO_SELECTED_PROF", prof);
     } catch {
-      // ignore
+       ignore
     }
   }, [mode, prof]);
 
@@ -532,7 +533,7 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
     }
   }
 
-  // Fetch appointment data from the API. Accepts a date range and filters.
+   Fetch appointment data from the API. Accepts a date range and filters.
   async function fetchRange(di: string, df: string, p: string, st: string, q: string) {
     const qs = new URLSearchParams({ datai: di, dataf: df, prof: p === "ALL" ? "" : p, status: st === "ALL" ? "" : st, q: q || "", mode });
     const res = await fetch(`/api/konsist/agendamentos?${qs.toString()}`, { cache: "no-store", credentials: "include" });
@@ -555,13 +556,13 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
       : Array.isArray(json?.data?.resultado)
       ? json.data.resultado
       : [];
-    // Flatten the array in case the API wraps results in nested arrays.
+     Flatten the array in case the API wraps results in nested arrays.
     const flat = Array.isArray(items) ? items : [];
     return flat;
   }
 
-  // Prefetch a range of dates in 4‑day chunks to minimise API calls. Restores the
-  // missing declaration that caused a syntax error in the original version.
+   Prefetch a range of dates in 4‑day chunks to minimise API calls. Restores the
+   missing declaration that caused a syntax error in the original version.
   async function prefetchRangeInChunks(startISO: string, endISO: string) {
     const start = new Date(startISO);
     const end = new Date(endISO);
@@ -611,7 +612,7 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
     await prefetchRangeInChunks(datai, dataf);
   }
 
-  // Initial load – prefetch the next 30 days on mount.
+   Initial load – prefetch the next 30 days on mount.
   useEffect(() => {
     prefetch30DiasAuto();
     setSelectedDate(new Date());
@@ -664,11 +665,11 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
   }, [raw, prof, status, search]);
 
   const events = useMemo(() => {
-    // Build the event list from the filtered Konsist data.  We need to be
-    // careful when extracting date/time since Konsist may return objects like
-    // `{ data: '01/02/2024' }` instead of plain strings.  Use extractValue to
-    // coerce values to strings where possible.  If we cannot find a valid
-    // date string we skip the event.
+     Build the event list from the filtered Konsist data.  We need to be
+     careful when extracting date/time since Konsist may return objects like
+     `{ data: '01/02/2024' }` instead of plain strings.  Use extractValue to
+     coerce values to strings where possible.  If we cannot find a valid
+     date string we skip the event.
     const seen = new Set<string>();
     const out: any[] = [];
     for (let idx = 0; idx < filtered.length; idx++) {
@@ -679,26 +680,26 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
       ).trim() || "-";
       const stRaw = x?.agendamento_status ?? x?.status ?? x?.situacao ?? "";
       const st = normalizeStatus(stRaw);
-      // safely extract date and time strings
+       safely extract date and time strings
       const dateStr = extractValue(x?.agendamento_data);
       const timeStr = extractValue(x?.agendamento_hora);
-      // require at least a valid date; time is optional
+       require at least a valid date; time is optional
       if (!dateStr) {
         console.warn("⛔ Agendamento sem data:", x);
         continue;
       }
-      // build start string: if time exists append with 'T', else rely on date only
+       build start string: if time exists append with 'T', else rely on date only
       const startStr = timeStr ? `${dateStr}T${timeStr}` : `${dateStr}`;
       const dt = new Date(startStr);
       if (isNaN(dt.getTime())) {
         console.warn("⛔ Data inválida:", startStr, x);
         continue;
       }
-      // end time is 30 minutes after start
+       end time is 30 minutes after start
       const endDt = new Date(dt);
       endDt.setMinutes(endDt.getMinutes() + 30);
       const endStr = toLocalISO(endDt);
-      // ensure start has at least yyyy-mm-dd format
+       ensure start has at least yyyy-mm-dd format
       if (!startStr || startStr.length < 10) {
         console.warn("🚨 Evento descartado (start inválido)", {
           data: dateStr,
@@ -760,9 +761,9 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
   }
   if (needsProfessionalLink) {
     return (
-      // Wrap content in a fragment to ensure a single top-level JSX node. Comments
-      // must be nested inside the fragment or returned element to avoid
-      // compilation errors. Using min-h-screen prevents vertical overflow.
+       Wrap content in a fragment to ensure a single top-level JSX node. Comments
+       must be nested inside the fragment or returned element to avoid
+       compilation errors. Using min-h-screen prevents vertical overflow.
       <>
         {/*
          * Use min-h-screen instead of calculating (100vh-1px) to avoid excessive
@@ -1091,7 +1092,8 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
                     </div>
                   )}
                   {tab === "status" && (
-                    <div className="mt-3 rounded-2xl border border-white/10 bg-slate-950/40 p-3">
+                    </div>
+                <div className="mt-3 rounded-2xl border border-white/10 bg-slate-950/40 p-3">
                       <div className="text-xs font-extrabold text-slate-200 mb-2">Legenda</div>
                       {[
                         "Confirmado",
@@ -1123,19 +1125,19 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
                    * vertical scrolling on most displays.  The width remains
                    * full and we allow horizontal overflow to scroll if
                    * necessary.
-                   */}
+                   */
                   <div className="h-[70vh] w-full overflow-x-auto">
                     <FullCalendar
                       ref={mainRef as any}
                       datesSet={(info) => {
-                        // Align fetch to the currently visible month
+                         Align fetch to the currently visible month
                         const base = info.start ?? new Date();
                         const di = startOfMonthISO(base);
                         const df = endOfMonthISO(base);
                         setSelectedDate(new Date(base.getFullYear(), base.getMonth(), base.getDate()));
                         setDatai(di);
                         setDataf(df);
-                        // Clear cache and prefetch the month
+                         Clear cache and prefetch the month
                         setChunks({});
                         setRaw([]);
                         prefetchRangeInChunks(di, df);

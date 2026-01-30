@@ -1,69 +1,5 @@
 "use client";
 
-// Utility function for building class names. Accepts any number of arguments and
-// filters out falsy values before joining them with a single space. This
-// pattern avoids conditional string concatenation throughout the UI and
-// improves readability when applying multiple conditional classes.
-const cx = (...c: any[]) => c.filter(Boolean).join(" ");
-
-// Format a JavaScript Date object into an ISO date string (YYYY-MM-DD). This
-// helper is used throughout the calendar when computing day ranges and
-// comparing dates without caring about time zones. Duplicates of this
-// function in the previous version of the component have been removed.
-function toISODate(d: Date) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-// Convert a Date into a local ISO date‑time string (YYYY-MM-DDTHH:MM:SS)
-// without adjusting for timezone offsets. This helper is used when
-// computing the end of an appointment slot. Note that the native
-// `toISOString()` would convert to UTC and adjust the time – which is not
-// desirable in this context.
-function toLocalISO(dt: Date) {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(
-    dt.getHours()
-  )}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;
-}
-
-// -----------------------------------------------------------------------------
-// 🛠 Extractor Helpers
-//
-// The Konsist API sometimes returns date and time fields as objects rather than
-// plain strings. For example `{ data: '01/02/2024' }` or `{ hora: '13:30' }`.
-// Interpolating these objects directly into template strings produces
-// "[object Object]" which then causes invalid date strings when building
-// event start/end times. The functions below attempt to safely extract a
-// string representation from these objects. If no string can be found, they
-// return `fallback` (or `null` when not provided).
-export function extractValue(value: any, fallback: string | null = null): string | null {
-  if (!value) return fallback;
-  // Already a string? return trimmed value
-  if (typeof value === 'string') return value.trim();
-  // Numbers can be converted to strings
-  if (typeof value === 'number') return String(value);
-  if (typeof value === 'object') {
-    // Keys to check in order of preference
-    const preferredKeys = ['data', 'hora', 'value', 'date', 'time'];
-    for (const key of preferredKeys) {
-      if (key in value && typeof value[key] === 'string') {
-        return value[key].trim();
-      }
-    }
-    // Fallback: return the first string property
-    for (const k in value) {
-      const v = value[k];
-      if (typeof v === 'string') {
-        return v.trim();
-      }
-    }
-  }
-  return fallback;
-}
-
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -78,35 +14,64 @@ type Props = {
   subtitle?: string;
 };
 
-// Helper for adding or subtracting days from a given date.
+function cx(...a: Array<string | false | undefined | null>) {
+  return a.filter(Boolean).join(" ");
+}
+
+function toISODate(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+
 function addDays(d: Date, n: number) {
   const x = new Date(d);
   x.setDate(x.getDate() + n);
   return x;
 }
 
-// -----------------------------------------------------------------------------
+
+// ==========================
 // 📆 Helpers de mês (fetch)
-//
-// These helpers compute the first and last day of a month (in ISO format),
-// simplify date comparisons and normalisation, and encapsulate minor logic for
-// calendar operations.
-// -----------------------------------------------------------------------------
+// ==========================
 function startOfMonthISO(d: Date) {
   return toISODate(new Date(d.getFullYear(), d.getMonth(), 1));
 }
 function endOfMonthISO(d: Date) {
   return toISODate(new Date(d.getFullYear(), d.getMonth() + 1, 0));
 }
+
+// =====================================================
+// Utils básicos
+// =====================================================
+function cx(...a: Array<string | false | undefined | null>) {
+  return a.filter(Boolean).join(" ");
+}
+
+function toISODate(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function toLocalISO(dt: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(
+    dt.getDate()
+  )}T${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;
+}
+
+
 function startOfMonth(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), 1);
 }
 function isSameDay(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
+  return a.getFullYear() === b.getFullYear() &&
     a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
+    a.getDate() === b.getDate();
 }
 function addMonths(d: Date, n: number) {
   return new Date(d.getFullYear(), d.getMonth() + n, 1);
@@ -115,23 +80,146 @@ function clampToDay(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
 }
 
-// ----------------------------------------------------------------------------
-// Normalising status values returned by Konsist. Many different labels may map
-// to the same logical state. The previous implementation repeated this logic
-// across multiple functions; here it's centralised for clarity.
-// ----------------------------------------------------------------------------
+function MiniCalendar({
+  value,
+  onChange,
+}: {
+  value: Date;
+  onChange: (d: Date) => void;
+}) {
+  const [view, setView] = React.useState<Date>(() => startOfMonth(value));
+
+  React.useEffect(() => {
+    setView(startOfMonth(value));
+  }, [value]);
+
+  const monthLabel = React.useMemo(() => {
+    const fmt = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" });
+    // capitaliza primeira letra
+    const txt = fmt.format(view);
+    return txt.charAt(0).toUpperCase() + txt.slice(1);
+  }, [view]);
+
+  const days = React.useMemo(() => {
+    const first = startOfMonth(view);
+    const startDow = first.getDay(); // 0 domingo
+    const gridStart = new Date(first);
+    gridStart.setDate(first.getDate() - startDow);
+
+    const out: Date[] = [];
+    for (let i = 0; i < 42; i++) {
+      const d = new Date(gridStart);
+      d.setDate(gridStart.getDate() + i);
+      out.push(clampToDay(d));
+    }
+    
+return out;
+
+  }, [view]);
+
+  const week = ["D", "S", "T", "Q", "Q", "S", "S"];
+
+  return (
+    <div className="mt-2">
+      <div className="flex items-center justify-between mb-2">
+        <button
+          type="button"
+          onClick={() => setView((v) => addMonths(v, -1))}
+          className="h-8 w-8 rounded-lg bg-slate-950/60 border border-white/10 text-slate-100 font-black hover:bg-slate-900/70"
+          aria-label="Mes anterior"
+        >
+          ‹
+        </button>
+
+        <div className="text-[12px] font-black text-slate-100/90">
+          {monthLabel}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setView((v) => addMonths(v, 1))}
+          className="h-8 w-8 rounded-lg bg-slate-950/60 border border-white/10 text-slate-100 font-black hover:bg-slate-900/70"
+          aria-label="Proximo mes"
+        >
+          ›
+        </button>
+      </div>
+
+              <div className="grid grid-cols-7 gap-1 mb-1">
+                {week.map((w, i) => (
+          <div
+            key={`${w}-${i}`}
+            className="text-center text-[10px] font-black text-slate-200/70"
+          >
+            {w}
+          </div>
+        ))}
+
+      </div>
+
+      <div className="grid grid-cols-7 gap-1">
+        {days.map((d) => {
+          const inMonth = d.getMonth() === view.getMonth();
+          const selected = isSameDay(d, value);
+
+          return (
+            <button
+              key={d.toISOString()}
+              type="button"
+              onClick={() => onChange(d)}
+              className={[
+                "h-8 rounded-lg border text-[11px] font-black transition",
+                inMonth
+                  ? "bg-slate-950/45 border-white/10 text-slate-100 hover:bg-slate-900/60"
+                  : "bg-transparent border-white/5 text-slate-400/60 hover:bg-white/5",
+                selected
+                  ? "ring-2 ring-blue-500/70 bg-blue-500/20 border-blue-400/40"
+                  : "",
+              ].join(" ")}
+              aria-label={"Dia " + d.getDate()}
+            >
+              {d.getDate()}
+            </button>
+          );
+        })}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => onChange(clampToDay(new Date()))}
+        className="mt-2 w-full rounded-xl bg-slate-950/60 border border-white/10 px-3 py-2 text-[12px] font-black text-slate-100 hover:bg-slate-900/70"
+      >
+        Hoje
+      </button>
+    </div>
+  );
+}
+
+
+// ✅ Local ISO (sem mudar horário por timezone do toISOString)
+function toLocalISO(dt: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(
+    dt.getHours()
+  )}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;
+}
+
+// ✅ Status normalizado
 function normalizeStatus(s: any) {
   const t = String(s || "").trim().toLowerCase();
+
   if (["confirmado", "c"].includes(t)) return "Confirmado";
   // remove "Agendado": vira Não Confirmado
-  if (["agendado", "agendada", ""].includes(t)) return "Não Confirmado";
+  if (["agendado", "agendada", " "].includes(t)) return "Não Confirmado";
+
   if (["desmarcado", "desmarcada", "d", "cancelado", "cancelada"].includes(t)) return "Desmarcado";
   if (["atendido", "realizado", "m"].includes(t)) return "Atendido pelo Medico";
   if (["b", "bloqueado", "bloqueada"].includes(t)) return "Bloqueado";
+
   return "Não Confirmado";
 }
 
-// Map normalised status strings to a consistent colour palette for the UI.
+// ✅ Cor por status NORMALIZADO
 function statusColorNormalized(norm: string) {
   switch (norm) {
     case "Confirmado":
@@ -148,125 +236,110 @@ function statusColorNormalized(norm: string) {
   }
 }
 
-// Parse a Brazilian date/time string (DD/MM/YYYY HH:mm) into a local ISO string.
+// =====================================================
+// 🧠 Normalização segura de data/hora (Konsist)
+// =====================================================
+function konsistExtract(v: any): string {
+  if (!v) return "";
+  if (typeof v === "string") return v.trim();
+  if (typeof v === "number") return String(v);
+  if (typeof v === "object") {
+    if (typeof v.data === "string") return v.data.trim();
+    if (typeof v.hora === "string") return v.hora.trim();
+    if (typeof v.value === "string") return v.value.trim();
+  }
+  return "";
+}
+
 function brToISO(dt: string) {
-  const m = dt.match(/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})(?:\s+([0-9]{2}):([0-9]{2}))?/);
+  const m = dt.match(
+    /^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2}))?/
+  );
   if (!m) return dt;
   const [, dd, mm, yyyy, hh = "00", mi = "00"] = m;
   return `${yyyy}-${mm}-${dd}T${hh}:${mi}:00`;
 }
 
-// --------------------------------------------------------------------------------------
-// MiniCalendar component
-// --------------------------------------------------------------------------------------
-// A simple date picker used in the calendar sidebar. It displays a grid of 6x7
-// cells representing days, highlights the current selection and supports
-// navigation across months. When a user clicks on a day, the parent
-// CalendarPretty component will update the visible day in the main view via
-// gotoDate().
-
-function MiniCalendar({
-  value,
-  onChange,
-}: {
-  value: Date;
-  onChange: (d: Date) => void;
-}) {
-  const [view, setView] = React.useState<Date>(() => startOfMonth(value));
-  React.useEffect(() => {
-    setView(startOfMonth(value));
-  }, [value]);
-
-  const monthLabel = React.useMemo(() => {
-    const fmt = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" });
-    const txt = fmt.format(view);
-    return txt.charAt(0).toUpperCase() + txt.slice(1);
-  }, [view]);
-
-  const days = React.useMemo(() => {
-    const first = startOfMonth(view);
-    const startDow = first.getDay(); // 0 domingo
-    const gridStart = new Date(first);
-    gridStart.setDate(first.getDate() - startDow);
-    const out: Date[] = [];
-    for (let i = 0; i < 42; i++) {
-      const d = new Date(gridStart);
-      d.setDate(gridStart.getDate() + i);
-      out.push(clampToDay(d));
-    }
-    return out;
-  }, [view]);
-
-  const week = ["D", "S", "T", "Q", "Q", "S", "S"];
-
-  return (
-    <div className="mt-2">
-      <div className="flex items-center justify-between mb-2">
-        <button
-          type="button"
-          onClick={() => setView((v) => addMonths(v, -1))}
-          className="h-8 w-8 rounded-lg bg-slate-950/60 border border-white/10 text-slate-100 font-black hover:bg-slate-900/70"
-          aria-label="Mes anterior"
-        >
-          ‹
-        </button>
-        <div className="text-[12px] font-black text-slate-100/90">{monthLabel}</div>
-        <button
-          type="button"
-          onClick={() => setView((v) => addMonths(v, 1))}
-          className="h-8 w-8 rounded-lg bg-slate-950/60 border border-white/10 text-slate-100 font-black hover:bg-slate-900/70"
-          aria-label="Proximo mes"
-        >
-          ›
-        </button>
-      </div>
-      <div className="grid grid-cols-7 gap-1 mb-1">
-        {week.map((w, i) => (
-          <div key={`${w}-${i}`} className="text-center text-[10px] font-black text-slate-200/70">
-            {w}
-          </div>
-        ))}
-      </div>
-      <div className="grid grid-cols-7 gap-1">
-        {days.map((d) => {
-          const inMonth = d.getMonth() === view.getMonth();
-          const selected = isSameDay(d, value);
-          return (
-            <button
-              key={d.toISOString()}
-              type="button"
-              onClick={() => onChange(d)}
-              className={[
-                "h-8 rounded-lg border text-[11px] font-black transition",
-                inMonth
-                  ? "bg-slate-950/45 border-white/10 text-slate-100 hover:bg-slate-900/60"
-                  : "bg-transparent border-white/5 text-slate-400/60 hover:bg-white/5",
-                selected ? "ring-2 ring-blue-500/70 bg-blue-500/20 border-blue-400/40" : "",
-              ].join(" ")}
-              aria-label={"Dia " + d.getDate()}
-            >
-              {d.getDate()}
-            </button>
-          );
-        })}
-      </div>
-      <button
-        type="button"
-        onClick={() => onChange(clampToDay(new Date()))}
-        className="mt-2 w-full rounded-xl bg-slate-950/60 border border-white/10 px-3 py-2 text-[12px] font-black text-slate-100 hover:bg-slate-900/70"
-      >
-        Hoje
-      </button>
-    </div>
-  );
+function konsistDateTime(x: any): string | null {
+  const d = konsistExtract(x?.agendamento_data);
+  const h = konsistExtract(x?.agendamento_hora) || "00:00";
+  if (!d) return null;
+  return brToISO(`${d} ${h}`);
 }
 
-// ----------------------------------------------------------------------------
-// HoverCard component
-// ----------------------------------------------------------------------------
-// Displays a tooltip with patient, professional, status and time information
-// when the user hovers over an appointment on the calendar. This uses
-// absolute positioning relative to the viewport and follows the cursor.
+// ✅ HELPER ÚNICO E DEFINITIVO
+function getStartEndFromKonsistSafe(x: any, defaultMinutes = 30) {
+  const start = konsistDateTime(x);
+  if (!start) return null;
+
+  const dt = new Date(start);
+  if (isNaN(dt.getTime())) return null;
+
+  const end = new Date(dt);
+  end.setMinutes(end.getMinutes() + defaultMinutes);
+
+  return {
+    start,
+    end: toLocalISO(end),
+  };
+}
+
+// ==========================
+// 🧠 Normaliza data/hora Konsist
+// ==========================
+function toStr(v: any) {
+  if (!v) return "";
+  if (typeof v === "string") return v.trim();
+  if (v instanceof Date) return v.toISOString().slice(0,16).replace("T"," ");
+  if (typeof v === "object") {
+    if ("data" in v) return String(v.data);
+    if ("value" in v) return String(v.value);
+  }
+  return String(v);
+}
+
+
+// 🔥 Konsist retorna Resultado[] com agendamento[]
+function normalizeKonsist(items: any[]): any[] {
+  const out: any[] = [];
+  for (const row of items || []) {
+    const paciente = row?.paciente || row?.nomepaciente || row?.Paciente || "";
+    const idpaciente = row?.idpaciente ?? row?.idPaciente ?? null;
+
+    const ags =
+      (Array.isArray(row?.agendamento) && row.agendamento) ||
+      (Array.isArray(row?.Agendamento) && row.Agendamento) ||
+      (Array.isArray(row?.agendamentos) && row.agendamentos) ||
+      null;
+
+    if (ags && ags.length) {
+      for (const ag of ags) {
+        out.push({
+          ...ag,
+          paciente,
+          idpaciente,
+          __konsist_parent: row,
+        });
+      }
+      return { start: null };
+    }
+
+    out.push(row);
+  }
+  return out.filter(Boolean);
+}
+
+function fmtHeaderDay(d: Date) {
+  const isToday = toISODate(d) === toISODate(new Date());
+  const month = d.toLocaleString("pt-BR", { month: "long" });
+  const day = d.getDate();
+  const label = `${month.charAt(0).toUpperCase()}${month.slice(1)} ${day}`;
+  return { left: isToday ? "HOJE" : "DIA", right: label };
+}
+
+// ==========================
+// HOVER Tooltip
+// ==========================
 type HoverInfo = {
   x: number;
   y: number;
@@ -276,6 +349,7 @@ type HoverInfo = {
   inicio?: string;
   fim?: string;
 };
+
 function HoverCard({ data }: { data: HoverInfo }) {
   return (
     <div
@@ -284,12 +358,15 @@ function HoverCard({ data }: { data: HoverInfo }) {
     >
       <div className="text-[11px] text-slate-400 font-extrabold">PACIENTE</div>
       <div className="text-sm font-black text-white leading-tight">{data.paciente || "-"}</div>
+
       <div className="mt-2 text-[11px] text-slate-400 font-extrabold">PROFISSIONAL</div>
       <div className="text-xs font-extrabold text-slate-200">{data.profissional || "-"}</div>
+
       <div className="mt-2 flex items-center gap-2">
         <span className="h-2.5 w-2.5 rounded-full" style={{ background: statusColorNormalized(data.status) }} />
         <div className="text-xs font-extrabold text-white">{data.status}</div>
       </div>
+
       {(data.inicio || data.fim) && (
         <div className="mt-2 text-[11px] text-slate-400">
           {data.inicio} {data.fim ? `→ ${data.fim}` : ""}
@@ -299,11 +376,9 @@ function HoverCard({ data }: { data: HoverInfo }) {
   );
 }
 
-// ----------------------------------------------------------------------------
-// PatientDrawer component
-// ----------------------------------------------------------------------------
-// Displays more detailed information about an appointment when the user clicks
-// on it. The drawer slides in from the right and can be closed.
+// ==========================
+// Drawer (Paciente)
+// ==========================
 type DrawerData = {
   paciente: string;
   profissional: string;
@@ -312,12 +387,15 @@ type DrawerData = {
   fim?: string;
   raw?: any;
 };
+
 function PatientDrawer({ open, data, onClose }: { open: boolean; data: DrawerData | null; onClose: () => void }) {
   if (!open || !data) return null;
+
   return (
     <div className="fixed inset-0 z-[9998]">
       {/* overlay */}
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+
       {/* panel */}
       <div className="absolute right-0 top-0 h-full w-[420px] max-w-[90vw] bg-slate-950 border-l border-white/10 shadow-[0_30px_120px_rgba(0,0,0,.65)]">
         <div className="p-5">
@@ -325,9 +403,11 @@ function PatientDrawer({ open, data, onClose }: { open: boolean; data: DrawerDat
             <div>
               <div className="text-[11px] text-slate-400 font-extrabold">PACIENTE</div>
               <div className="text-lg font-black text-white leading-snug">{data.paciente}</div>
+
               <div className="mt-3 text-[11px] text-slate-400 font-extrabold">PROFISSIONAL</div>
               <div className="text-sm font-extrabold text-slate-200">{data.profissional || "-"}</div>
             </div>
+
             <button
               onClick={onClose}
               className="rounded-full border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-2 text-xs font-extrabold text-slate-200"
@@ -335,18 +415,21 @@ function PatientDrawer({ open, data, onClose }: { open: boolean; data: DrawerDat
               Fechar
             </button>
           </div>
+
           <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
             <div className="text-[11px] text-slate-400 font-extrabold">STATUS</div>
             <div className="mt-2 flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full" style={{ background: statusColorNormalized(data.status) }} />
               <div className="text-sm font-black text-white">{data.status}</div>
             </div>
+
             <div className="mt-4 text-[11px] text-slate-400 font-extrabold">HORÁRIO</div>
             <div className="text-sm font-extrabold text-slate-200">
               {data.inicio || "-"} {data.fim ? `→ ${data.fim}` : ""}
             </div>
           </div>
-          {/* espaço para evoluções futuras */}
+
+          {/* espaço para você evoluir depois */}
           <div className="mt-4 text-xs text-slate-500">
             (Aqui depois a gente pode colocar telefone, convênio, procedimento, etc.)
           </div>
@@ -356,18 +439,23 @@ function PatientDrawer({ open, data, onClose }: { open: boolean; data: DrawerDat
   );
 }
 
-// ----------------------------------------------------------------------------
-// renderEventContent
-// ----------------------------------------------------------------------------
-// Custom renderer for calendar events. It displays the start time (and end
-// time when available) in a small font and a truncated patient name below.
+// ==========================
+// Render do evento: horário + paciente
+// ==========================
 function renderEventContent(arg: any) {
   const ex = arg?.event?.extendedProps || {};
   const paciente = String(ex?.paciente || "Paciente").trim();
+
   const parts = paciente.split(/\s+/).filter(Boolean);
   const short = parts.length <= 2 ? paciente : `${parts[0]} ${parts[parts.length - 1]}`;
-  const start = arg?.event?.start ? arg.event.start.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
-  const end = arg?.event?.end ? arg.event.end.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
+
+  const start = arg?.event?.start
+    ? arg.event.start.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+    : "";
+  const end = arg?.event?.end
+    ? arg.event.end.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+    : "";
+
   return (
     <div className="flex flex-col leading-tight">
       <div className="text-[11px] font-black opacity-80">
@@ -379,12 +467,20 @@ function renderEventContent(arg: any) {
   );
 }
 
-// ----------------------------------------------------------------------------
-// ProgressBar
-// ----------------------------------------------------------------------------
-// Displays the progress of prefetching operations. It takes a percentage value
-// and optional subtext describing the current chunk being fetched.
-function ProgressBar({ show, label, percent, sub }: { show: boolean; label: string; percent: number; sub?: string }) {
+// ==========================
+// Progress UI
+// ==========================
+function ProgressBar({
+  show,
+  label,
+  percent,
+  sub,
+}: {
+  show: boolean;
+  label: string;
+  percent: number;
+  sub?: string;
+}) {
   if (!show) return null;
   return (
     <div className="mb-3 rounded-2xl border border-white/10 bg-white/5 p-3">
@@ -402,82 +498,74 @@ function ProgressBar({ show, label, percent, sub }: { show: boolean; label: stri
   );
 }
 
-// ----------------------------------------------------------------------------
-// CalendarPretty component
-// ----------------------------------------------------------------------------
-// The main calendar component. It handles data fetching, event normalisation,
-// filtering and rendering. It also coordinates the drawer and hover tooltips.
-//
-// This component has been cleaned up: duplicate definitions have been removed,
-// undefined variables have been eliminated, and the Google sync button hooks
-// remain intact. The prefetchRangeInChunks helper has been restored to avoid
-// syntax errors when compiling.
 export default function CalendarPretty({ mode, title, subtitle }: Props) {
-  const mainRef = useRef<FullCalendar | null>(null);
+const mainRef = useRef<FullCalendar | null>(null);
+  
   const [tab, setTab] = useState<"agenda" | "filtros" | "status">("agenda");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
+
   const [raw, setRaw] = useState<KonsistItem[]>([]);
   const [prof, setProf] = useState<string>("ALL");
   const [status, setStatus] = useState<string>("ALL");
   const [search, setSearch] = useState<string>("");
+
+
   const [defaultProfessional, setDefaultProfessional] = useState<string | undefined>(undefined);
+
   // sessão / google
   const [appUser, setAppUser] = useState<any>(null);
   const [proReq, setProReq] = useState<any>(null);
+
   // pedido de vínculo
   const [prosList, setProsList] = useState<string[]>([]);
   const [requestProf, setRequestProf] = useState<string>("");
   const [requesting, setRequesting] = useState(false);
   const [reqMsg, setReqMsg] = useState<string>("");
+
   // sync manual
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState<string>("");
-  // progress state
-  const [prog, setProg] = useState({ running: false, done: 0, total: 0, current: "" });
-  const [datai, setDatai] = useState<string>("");
-  const [dataf, setDataf] = useState<string>("");
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [hover, setHover] = useState<HoverInfo | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerData, setDrawerData] = useState<DrawerData | null>(null);
-  const [chunks, setChunks] = useState<Record<string, KonsistItem[]>>({});
 
-  // Load last selected professional and session info in professional mode.
+  // ✅ PROFESSIONAL: carrega ultimo filtro salvo e tenta vincular pelo session
   useEffect(() => {
     if (mode !== "professional") return;
+
     try {
       const saved = window.localStorage.getItem("AVANCE_PRO_SELECTED_PROF");
       if (saved) setProf(saved);
-    } catch {
-      // ignore
-    }
+    } catch {}
+
     fetch("/api/auth/session")
       .then((r) => (r.ok ? r.json() : null))
       .then((s) => {
         setAppUser(s?.appUser || null);
         setProReq(s?.appUser?.professionalLinkRequest || null);
+
         const v = s?.appUser?.konsistMedicoNome || s?.user?.konsistMedicoNome;
         if (v) {
           setDefaultProfessional(v);
+          // no modo professional, sempre fixa no vínculo aprovado
           setProf(v);
         }
       })
       .catch(() => {});
   }, [mode]);
 
-  // Fetch list of professionals if no default is set.
+  // ✅ PROFESSIONAL: se ainda não tem vínculo, carrega lista de profissionais + status do pedido
   useEffect(() => {
     if (mode !== "professional") return;
     if (defaultProfessional) return;
+
     setReqMsg("");
-    fetch("/api/me/professional-link-request", { cache: "no-store", credentials: "include" })
+    fetch("/api/me/professional-link-request", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => {
         if (j?.ok) setProReq(j.latest || null);
       })
       .catch(() => {});
-    fetch("/api/konsist/professionals", { cache: "no-store", credentials: "include" })
+
+    fetch("/api/konsist/professionals", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => {
         const list = Array.isArray(j?.professionals) ? j.professionals : [];
@@ -486,16 +574,6 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
       })
       .catch(() => {});
   }, [mode, defaultProfessional, requestProf]);
-
-  // Persist selected professional in localStorage for professional mode.
-  useEffect(() => {
-    if (mode !== "professional") return;
-    try {
-      if (prof && prof !== "ALL") window.localStorage.setItem("AVANCE_PRO_SELECTED_PROF", prof);
-    } catch {
-      // ignore
-    }
-  }, [mode, prof]);
 
   async function requestProfessionalLink() {
     setRequesting(true);
@@ -532,22 +610,61 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
     }
   }
 
-  // Fetch appointment data from the API. Accepts a date range and filters.
+  // ✅ persistir escolha do profissional no modo professional
+  useEffect(() => {
+    if (mode !== "professional") return;
+    try {
+      if (prof && prof !== "ALL") window.localStorage.setItem("AVANCE_PRO_SELECTED_PROF", prof);
+    } catch {}
+  }, [mode, prof]);
+
+  const [datai, setDatai] = useState<string>("");
+  const [dataf, setDataf] = useState<string>("");
+
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [hover, setHover] = useState<HoverInfo | null>(null);
+
+  // ✅ drawer
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerData, setDrawerData] = useState<DrawerData | null>(null);
+
+  // ✅ cache por janela
+  const [chunks, setChunks] = useState<Record<string, KonsistItem[]>>({});
+
+  // ✅ progresso
+  const [prog, setProg] = useState({
+    running: false,
+    done: 0,
+    total: 0,
+    current: "",
+  });
+
   async function fetchRange(di: string, df: string, p: string, st: string, q: string) {
-    const qs = new URLSearchParams({ datai: di, dataf: df, prof: p === "ALL" ? "" : p, status: st === "ALL" ? "" : st, q: q || "", mode });
-    const res = await fetch(`/api/konsist/agendamentos?${qs.toString()}`, { cache: "no-store", credentials: "include" });
+    const qs = new URLSearchParams({
+      datai: di,
+      dataf: df,
+      prof: p === "ALL" ? "" : p,
+      status: st === "ALL" ? "" : st,
+      q: q || "",
+      mode,
+    });
+
+    const res = await fetch(`/api/konsist/agendamentos?${qs.toString()}`, { cache: "no-store" });
     const rawText = await res.text();
+
     let json: any = null;
     try {
       json = rawText ? JSON.parse(rawText) : null;
     } catch {
-      throw new Error(`Resposta não‑JSON (HTTP ${res.status}): ${rawText.slice(0, 200)}`);
+      throw new Error(`Resposta não-JSON (HTTP ${res.status}): ${rawText.slice(0, 200)}`);
     }
+
     if (!res.ok || !json?.ok) {
       const msg = json?.error ? `${json.error}${json.status ? ` (${json.status})` : ""}` : `HTTP ${res.status}`;
       const body = json?.body ? `\n${String(json.body).slice(0, 400)}` : "";
       throw new Error(msg + body);
     }
+
     const items = Array.isArray(json?.data?.Resultado)
       ? json.data.Resultado
       : Array.isArray(json?.data)
@@ -555,29 +672,77 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
       : Array.isArray(json?.data?.resultado)
       ? json.data.resultado
       : [];
-    // Flatten the array in case the API wraps results in nested arrays.
-    const flat = Array.isArray(items) ? items : [];
-    return flat;
+
+    
+const flat = Array.isArray(items) ? items : [];
+console.group("📦 FETCH RANGE");
+console.log("Periodo:", di, "→", df);
+console.log("Itens brutos:", items);
+console.log("Itens normalizados:", flat);
+console.groupEnd();
+return flat;
+
   }
 
-  // Prefetch a range of dates in 4‑day chunks to minimise API calls. Restores the
-  // missing declaration that caused a syntax error in the original version.
+  function dedupeMerge(prev: any, add: any) {
+  const p = Array.isArray(prev) ? prev : [];
+  const a = Array.isArray(add) ? add : [];
+  const merged = [...p, ...a];
+    const seen = new Set<string>();
+    const out: any[] = [];
+
+    for (const x of merged) {
+      const paciente = String(x?.paciente || "").trim().toLowerCase();
+      const profNome = String(x?.agendamento_medico || x?.profissional || "").trim().toLowerCase();
+// 🔑 garante que estamos no nível do agendamento
+const ag = Array.isArray(x?.agendamento) ? x.agendamento[0] : x;
+
+const d = extractValue(ag?.agendamento_data);
+const h = extractValue(ag?.agendamento_hora);
+
+const start = brToISO(
+  d && h ? `${d} ${h}` : d
+);
+
+
+if (!start) {
+  console.warn("🚨 Agendamento sem data válida:", ag);
+  return { start: null };
+}
+
+      const sig = `${paciente}|${profNome}|${d}|${h}`;
+      if (seen.has(sig)) return { start: null };
+      seen.add(sig);
+      out.push(x);
+    }
+    return out.filter(Boolean);
+  }
+
+  // ==========================
+  // Prefetch em chunks (4 dias)
+  // ==========================
   async function prefetchRangeInChunks(startISO: string, endISO: string) {
     const start = new Date(startISO);
     const end = new Date(endISO);
+
     const msDay = 24 * 60 * 60 * 1000;
     const totalDias = Math.max(0, Math.round((end.getTime() - start.getTime()) / msDay));
     const step = 4;
+
     const totalChunks = Math.floor(totalDias / step) + 1;
+
     setProg({ running: true, done: 0, total: totalChunks, current: "" });
     setError("");
     setLoading(true);
+
     try {
       for (let i = 0; i <= totalDias; i += step) {
         const di = toISODate(addDays(start, i));
         const df = toISODate(addDays(start, Math.min(i + step - 1, totalDias)));
+
         const key = `${di}_${df}_${prof}_${status}_${(search || "").trim().toLowerCase()}`;
         setProg((p0) => ({ ...p0, current: `${di} → ${df}` }));
+
         if (!chunks[key]) {
           try {
             const flat = await fetchRange(di, df, prof, status, search);
@@ -587,6 +752,7 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
             console.warn("Falha no chunk", di, df);
           }
         }
+
         setProg((p0) => ({ ...p0, done: Math.min(p0.total, p0.done + 1) }));
       }
     } finally {
@@ -601,6 +767,7 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
     const dfUI = toISODate(addDays(start, 30));
     setDatai(diUI);
     setDataf(dfUI);
+
     setRaw([]);
     await prefetchRangeInChunks(diUI, dfUI);
   }
@@ -611,10 +778,10 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
     await prefetchRangeInChunks(datai, dataf);
   }
 
-  // Initial load – prefetch the next 30 days on mount.
   useEffect(() => {
     prefetch30DiasAuto();
     setSelectedDate(new Date());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const professionals = useMemo(() => {
@@ -646,15 +813,20 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
 
   const filtered = useMemo(() => {
     const q = (search || "").toLowerCase().trim();
+
     return (Array.isArray(raw) ? raw : []).filter((x) => {
       const pRaw = String(
         x?.agendamento_medico || x?.profissional || x?.profissional_nome || x?.profissionalNome || x?.medico || ""
       );
+
       const sRaw = x?.agendamento_status ?? x?.status ?? x?.situacao ?? x?.status_nome ?? x?.statusNome;
       const sNorm = normalizeStatus(sRaw) || "";
+
       const paciente = String(x?.paciente || x?.nomepaciente || x?.Paciente || "").toLowerCase();
+
       if (prof !== "ALL" && pRaw !== prof) return false;
       if (status !== "ALL" && sNorm !== status) return false;
+
       if (q) {
         const hay = `${paciente} ${pRaw.toLowerCase()} ${sNorm.toLowerCase()}`;
         if (!hay.includes(q)) return false;
@@ -664,60 +836,71 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
   }, [raw, prof, status, search]);
 
   const events = useMemo(() => {
-    // Build the event list from the filtered Konsist data.  We need to be
-    // careful when extracting date/time since Konsist may return objects like
-    // `{ data: '01/02/2024' }` instead of plain strings.  Use extractValue to
-    // coerce values to strings where possible.  If we cannot find a valid
-    // date string we skip the event.
     const seen = new Set<string>();
     const out: any[] = [];
+
     for (let idx = 0; idx < filtered.length; idx++) {
       const x = filtered[idx];
+
       const paciente = String(x?.paciente || "Paciente").trim();
-      const profNome = String(
-        x?.agendamento_medico || x?.profissional || x?.profissional_nome || ""
-      ).trim() || "-";
+      const profNome =
+        String(x?.agendamento_medico || x?.profissional || x?.profissional_nome || "").trim() || "-";
+
       const stRaw = x?.agendamento_status ?? x?.status ?? x?.situacao ?? "";
       const st = normalizeStatus(stRaw);
-      // safely extract date and time strings
-      const dateStr = extractValue(x?.agendamento_data);
-      const timeStr = extractValue(x?.agendamento_hora);
-      // require at least a valid date; time is optional
-      if (!dateStr) {
-        console.warn("⛔ Agendamento sem data:", x);
-        continue;
-      }
-      // build start string: if time exists append with 'T', else rely on date only
-      const startStr = timeStr ? `${dateStr}T${timeStr}` : `${dateStr}`;
-      const dt = new Date(startStr);
-      if (isNaN(dt.getTime())) {
-        console.warn("⛔ Data inválida:", startStr, x);
-        continue;
-      }
-      // end time is 30 minutes after start
-      const endDt = new Date(dt);
-      endDt.setMinutes(endDt.getMinutes() + 30);
-      const endStr = toLocalISO(endDt);
-      // ensure start has at least yyyy-mm-dd format
-      if (!startStr || startStr.length < 10) {
-        console.warn("🚨 Evento descartado (start inválido)", {
-          data: dateStr,
-          hora: timeStr,
-          startGerado: startStr,
-          raw: x,
-        });
-        continue;
-      }
-      const dedupeKey = `${paciente.toLowerCase()}|${profNome.toLowerCase()}|${String(startStr)}`;
-      if (seen.has(dedupeKey)) continue;
+
+const d = x?.agendamento_data?.data || x?.agendamento_data;
+const h = x?.agendamento_hora?.hora || x?.agendamento_hora;
+
+if (!d || !h) {
+  console.warn("⛔ Agendamento sem data/hora:", x);
+  continue;
+}
+
+const start = `${d}T${h}`;
+const dt = new Date(start);
+
+if (isNaN(dt.getTime())) {
+  console.warn("⛔ Data inválida:", start, x);
+  continue;
+}
+
+const endDt = new Date(dt);
+endDt.setMinutes(endDt.getMinutes() + 30);
+const end = endDt.toISOString().slice(0,16);
+
+
+      if (!start || String(start).length < 10) {
+  console.warn("🚨 Evento descartado (start inválido)", {
+    data: d,
+    hora: h,
+    startGerado: start,
+    raw: x
+  });
+  return { start: null };
+}
+
+      const dedupeKey = `${paciente.toLowerCase()}|${profNome.toLowerCase()}|${String(start)}`;
+      if (seen.has(dedupeKey)) return { start: null };
       seen.add(dedupeKey);
+
+            
+      if (!endFinal && start) {
+        const dt = new Date(start);
+        if (!isNaN(dt.getTime())) {
+          dt.setMinutes(dt.getMinutes() + 30);
+          endFinal = toLocalISO(dt);
+        }
+      }
+
       const title = mode === "admin" ? `${paciente} • ${profNome}` : `${paciente}`;
       const color = statusColorNormalized(st);
+
       out.push({
         id: String(x?.id || x?.idagendamento || x?.agendamento_chave || idx),
         title,
-        start: startStr,
-        end: endStr,
+        start,
+        endFinal,
         backgroundColor: color,
         borderColor: "rgba(255,255,255,.18)",
         textColor: "#07101f",
@@ -729,168 +912,153 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
         },
       });
     }
-    return out;
+
+    return out.filter(Boolean);
   }, [filtered, mode]);
 
   const summaryByStatus = useMemo(() => {
-    const dayKey = toISODate(selectedDate);
-    const map = new Map<string, number>();
-    for (const ev of events) {
-      const start = ev?.start ? new Date(ev.start) : null;
-      if (!start || isNaN(start.getTime())) continue;
-      if (toISODate(start) !== dayKey) continue;
-      const st = String(ev?.extendedProps?.status || "Não Confirmado");
-      map.set(st, (map.get(st) || 0) + 1);
-    }
-    return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
-  }, [events, selectedDate]);
+  // ✅ Conta APENAS os eventos do dia atualmente visível
+  const dayKey = toISODate(selectedDate);
+  const map = new Map<string, number>();
+
+  for (const ev of events) {
+    const start = ev?.start ? new Date(ev.start) : null;
+    if (!start || isNaN(start.getTime())) return { start: null };
+    if (toISODate(start) !== dayKey) return { start: null };
+
+    const st = String(ev?.extendedProps?.status || "Não Confirmado");
+    map.set(st, (map.get(st) || 0) + 1);
+  }
+
+  return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+}, [events, selectedDate]);
 
   const headerDay = useMemo(() => fmtHeaderDay(selectedDate), [selectedDate]);
+
   const percent = useMemo(() => {
     if (!prog.total) return 0;
     return Math.round((prog.done / prog.total) * 100);
   }, [prog]);
+
   const needsProfessionalLink = mode === "professional" && !defaultProfessional;
-  function fmtHeaderDay(d: Date) {
-    const isToday = toISODate(d) === toISODate(new Date());
-    const month = d.toLocaleString("pt-BR", { month: "long" });
-    const day = d.getDate();
-    const label = `${month.charAt(0).toUpperCase()}${month.slice(1)} ${day}`;
-    return { left: isToday ? "HOJE" : "DIA", right: label };
-  }
+
   if (needsProfessionalLink) {
     return (
-      // Wrap content in a fragment to ensure a single top-level JSX node. Comments
-      // must be nested inside the fragment or returned element to avoid
-      // compilation errors. Using min-h-screen prevents vertical overflow.
-      <>
-        {/*
-         * Use min-h-screen instead of calculating (100vh-1px) to avoid excessive
-         * page height that forces a vertical scrollbar. We also hide overflow on
-         * the y-axis to make the interface feel more compact.
-         */}
-        <div className="min-h-screen w-full bg-slate-950 text-slate-100 overflow-hidden">
-          <div className="mx-auto max-w-2xl p-4 sm:p-6">
-            <h1 className="text-xl font-black mb-2">Minha Agenda</h1>
-            <p className="text-sm text-slate-400 mb-4">
-              Para ver a agenda, você precisa vincular qual profissional do Konsist é você.
-            </p>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div className="text-sm font-black mb-2">Status do vínculo</div>
-              {proReq?.status ? (
-                <div className="text-sm text-white/75 mb-3">
-                  Solicitação: <b>{proReq.requestedProfessional}</b>
-                  <br />
-                  Status: <b>{proReq.status}</b>
-                </div>
-              ) : (
-                <div className="text-sm text-white/70 mb-3">Nenhuma solicitação enviada ainda.</div>
-              )}
-              <div className="grid gap-2">
-                <label className="text-xs text-white/70 font-extrabold">Escolha seu nome no Konsist</label>
-                <select
-                  className="w-full rounded-xl bg-slate-950/50 border border-white/10 px-3 py-2 text-sm font-black"
-                  value={requestProf}
-                  onChange={(e) => setRequestProf(e.target.value)}
-                >
-                  {prosList.map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  type="button"
-                  onClick={requestProfessionalLink}
-                  disabled={requesting || !requestProf}
-                  className="mt-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-extrabold hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {requesting ? "Enviando…" : "Solicitar vínculo"}
-                </button>
-                {reqMsg ? <div className="text-sm mt-2">{reqMsg}</div> : null}
-                <div className="mt-3 text-xs text-white/60">
-                  Dica: se você ainda não vinculou sua agenda Google, vá em{' '}
-                  <a className="underline" href="/settings/calendar">
-                    Configurações → Google Calendar
-                  </a>
-                  .
-                </div>
-                {/*
-                 * Adiciona um botão para permitir que o profissional solicite a sincronização
-                 * com o Google Calendar diretamente a partir desta tela inicial. O botão
-                 * reutiliza a função syncGoogleNow já definida para realizar o POST
-                 * de sincronização e exibe o resultado no indicador de sincronização.
-                 */}
-                <button
-                  type="button"
-                  onClick={syncGoogleNow}
-                  className="mt-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-extrabold text-white hover:bg-emerald-700"
-                >
-                  Sincronizar Google Calendar
-                </button>
+      <div className="min-h-[calc(100vh-1px)] w-full bg-slate-950 text-slate-100">
+        <div className="mx-auto max-w-2xl p-4 sm:p-6">
+          <h1 className="text-xl font-black mb-2">Minha Agenda</h1>
+          <p className="text-sm text-slate-400 mb-4">
+            Para ver a agenda, você precisa vincular qual profissional do Konsist é você.
+          </p>
+
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="text-sm font-black mb-2">Status do vínculo</div>
+            {proReq?.status ? (
+              <div className="text-sm text-white/75 mb-3">
+                Solicitação: <b>{proReq.requestedProfessional}</b><br />
+                Status: <b>{proReq.status}</b>
+              </div>
+            ) : (
+              <div className="text-sm text-white/70 mb-3">Nenhuma solicitação enviada ainda.</div>
+            )}
+
+            <div className="grid gap-2">
+              <label className="text-xs text-white/70 font-extrabold">Escolha seu nome no Konsist</label>
+              <select
+                className="w-full rounded-xl bg-slate-950/50 border border-white/10 px-3 py-2 text-sm font-black"
+                value={requestProf}
+                onChange={(e) => setRequestProf(e.target.value)}
+              >
+                {prosList.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                type="button"
+                onClick={requestProfessionalLink}
+                disabled={requesting || !requestProf}
+                className="mt-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-extrabold hover:bg-blue-700 disabled:opacity-50"
+              >
+                {requesting ? "Enviando…" : "Solicitar vínculo"}
+              </button>
+
+              {reqMsg ? <div className="text-sm mt-2">{reqMsg}</div> : null}
+
+              <div className="mt-3 text-xs text-white/60">
+                Dica: se você ainda não vinculou sua agenda Google, vá em <a className="underline" href="/settings/calendar">Configurações → Google Calendar</a>.
               </div>
             </div>
           </div>
         </div>
-      </>
+      </div>
     );
   }
+
   return (
     <>
-      <style jsx global>{`
-        .fc {
-          --fc-border-color: rgba(148, 163, 184, 0.12);
-          --fc-page-bg-color: transparent;
-          --fc-today-bg-color: rgba(59, 130, 246, 0.06);
-          font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-        }
-        .fc .fc-timegrid-slot {
-          border-top: 1px solid rgba(148, 163, 184, 0.1) !important;
-        }
-        .fc .fc-timegrid-slot,
-        .fc .fc-timegrid-slot-lane {
-          height: 44px !important;
-        }
-        .fc .fc-timegrid-slot-label,
-        .fc .fc-timegrid-slot-label-cushion,
-        .fc .fc-timegrid-axis-frame {
-          height: 44px !important;
-          line-height: 44px !important;
-        }
-        .fc .fc-timegrid-axis-cushion,
-        .fc .fc-timegrid-slot-label-cushion {
-          color: rgba(226, 232, 240, 0.62);
-          font-weight: 900;
-          font-size: 12px;
-        }
-        .fc .fc-button {
-          background: rgba(2, 6, 23, 0.55) !important;
-          border: 1px solid rgba(148, 163, 184, 0.16) !important;
-          color: rgba(226, 232, 240, 0.92) !important;
-          border-radius: 999px !important;
-          padding: 10px 14px !important;
-          font-weight: 900 !important;
-          box-shadow: none !important;
-        }
-        .fc .fc-event {
-          border-radius: 18px !important;
-          padding: 6px 10px !important;
-          box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25) !important;
-          cursor: pointer;
-        }
-        @media (max-width: 640px) {
-          .fc .fc-header-toolbar {
-            flex-wrap: wrap !important;
-            gap: 10px !important;
-          }
-          .fc .fc-toolbar-chunk {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 10px !important;
-          }
-        }
-      `}</style>
+     <style jsx global>{`
+
+  .fc {
+    --fc-border-color: rgba(148, 163, 184, 0.12);
+    --fc-page-bg-color: transparent;
+    --fc-today-bg-color: rgba(59, 130, 246, 0.06);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  }
+  .fc .fc-timegrid-slot {
+    border-top: 1px solid rgba(148, 163, 184, 0.1) !important;
+  }
+  .fc .fc-timegrid-slot,
+  .fc .fc-timegrid-slot-lane {
+    height: 44px !important;
+  }
+  .fc .fc-timegrid-slot-label,
+  .fc .fc-timegrid-slot-label-cushion,
+  .fc .fc-timegrid-axis-frame {
+    height: 44px !important;
+    line-height: 44px !important;
+  }
+  .fc .fc-timegrid-axis-cushion,
+  .fc .fc-timegrid-slot-label-cushion {
+    color: rgba(226, 232, 240, 0.62);
+    font-weight: 900;
+    font-size: 12px;
+  }
+  .fc .fc-button {
+    background: rgba(2, 6, 23, 0.55) !important;
+    border: 1px solid rgba(148, 163, 184, 0.16) !important;
+    color: rgba(226, 232, 240, 0.92) !important;
+    border-radius: 999px !important;
+    padding: 10px 14px !important;
+    font-weight: 900 !important;
+    box-shadow: none !important;
+  }
+  .fc .fc-event {
+    border-radius: 18px !important;
+    padding: 6px 10px !important;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25) !important;
+    cursor: pointer;
+  }
+
+  /* Mobile: evita cortar a barra de ações */
+  @media (max-width: 640px) {
+    .fc .fc-header-toolbar {
+      flex-wrap: wrap !important;
+      gap: 10px !important;
+    }
+    .fc .fc-toolbar-chunk {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      gap: 10px !important;
+    }
+  }
+
+`}</style>
+
       {hover && <HoverCard data={hover} />}
+
       <PatientDrawer
         open={drawerOpen}
         data={drawerData}
@@ -899,24 +1067,21 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
           setDrawerData(null);
         }}
       />
-      {/*
-       * Use min-h-screen here as well when waiting for professional link to
-       * ensure the page doesn't extend beyond the viewport height.  Hide
-       * overflow on the y-axis to remove unnecessary scrollbars.
-       */}
-      <div className="min-h-screen w-full bg-slate-950 text-slate-100 overflow-hidden">
+
+      <div className="min-h-[calc(100vh-1px)] w-full bg-slate-950 text-slate-100">
         <div className="mx-auto max-w-[1600px] px-3 py-6">
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
             <div>
               <h1 className="text-xl font-black">{title || (mode === "admin" ? "Agenda Geral" : "Minha Agenda")}</h1>
               <p className="text-sm text-slate-400">{subtitle || (mode === "admin" ? "Visão administrativa" : "Visão do profissional")}</p>
             </div>
+
             <div className="flex flex-wrap items-center gap-2">
               <div className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200">
-                <span className="text-slate-400">Range:</span>{' '}
-                <span className="font-bold">{datai}</span> →{' '}
-                <span className="font-bold">{dataf}</span>
+                <span className="text-slate-400">Range:</span>{" "}
+                <span className="font-bold">{datai}</span> → <span className="font-bold">{dataf}</span>
               </div>
+
               <button
                 onClick={carregarPeriodoAtual}
                 className={cx(
@@ -928,7 +1093,8 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
               >
                 {loading ? "Carregando..." : "Atualizar"}
               </button>
-              {(mode === 'professional' || mode === 'admin') && appUser?.googleCalendar?.calendarId ? (
+
+              {mode === "professional" && appUser?.googleCalendar?.approved && appUser?.googleCalendar?.calendarId ? (
                 <button
                   onClick={syncGoogleNow}
                   className={cx(
@@ -943,17 +1109,26 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
               ) : null}
             </div>
           </div>
-          <ProgressBar show={prog.running || loading} label={`Carregando agenda: ${prog.done}/${prog.total || 0} blocos (4 dias cada)`} percent={percent} sub={prog.current ? `Agora: ${prog.current}` : undefined} />
+
+          <ProgressBar
+            show={prog.running || loading}
+            label={`Carregando agenda: ${prog.done}/${prog.total || 0} blocos (4 dias cada)`}
+            percent={percent}
+            sub={prog.current ? `Agora: ${prog.current}` : undefined}
+          />
+
           {syncMsg ? (
             <div className="mb-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
               {syncMsg}
             </div>
           ) : null}
+
           {error && (
             <div className="mb-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
               ❌ {error}
             </div>
           )}
+
           <div className="rounded-[34px] border border-white/10 bg-white/5 backdrop-blur p-4 shadow-[0_30px_120px_rgba(0,0,0,.55)]">
             <div className="grid grid-cols-12 gap-4">
               <aside className="col-span-12 lg:col-span-3">
@@ -964,12 +1139,13 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
                       {mode === "admin" ? "ADMIN" : "PRO"}
                     </div>
                   </div>
+
                   <div className="mt-4 space-y-2">
                     {[
                       ["agenda", "Calendar"],
                       ["filtros", "Filters"],
                       ["status", "Status"],
-                    ].map(([k, lbl]) => (
+                    ].map(([k, label]) => (
                       <button
                         key={k}
                         onClick={() => setTab(k as any)}
@@ -978,41 +1154,38 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
                           tab === k ? "bg-white/10" : "hover:bg-white/10"
                         )}
                       >
-                        <span className={cx(
-                          "h-10 w-10 rounded-2xl grid place-items-center",
-                          tab === k ? "bg-blue-600/30" : "bg-white/5"
-                        )}>
+                        <span className={cx("h-10 w-10 rounded-2xl grid place-items-center", tab === k ? "bg-blue-600/30" : "bg-white/5")}>
                           ●
                         </span>
                         <div className="leading-tight">
-                          <div className="text-sm">{lbl}</div>
+                          <div className="text-sm">{label}</div>
                           <div className="text-xs text-slate-400">
-                            {k === "agenda"
-                              ? "Visão do dia"
-                              : k === "filtros"
-                              ? "Profissional / status"
-                              : "Cores por status"}
+                            {k === "agenda" ? "Visão do dia" : k === "filtros" ? "Profissional / status" : "Cores por status"}
                           </div>
                         </div>
                       </button>
                     ))}
                   </div>
+
                   <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/40 p-3">
                     <div className="text-xs text-slate-400">Itens (filtrados)</div>
                     <div className="text-2xl font-black text-white">{filtered.length}</div>
                     <div className="mt-1 text-xs text-slate-500">Eventos renderizados: {events.length}</div>
                   </div>
-                  <div className="mt-4 rounded-2xl bg-white/5 border border-white/10 p-3">
-                    <div className="text-[11px] font-black text-slate-200/80">Ir para dia</div>
-                    <MiniCalendar
-                      value={selectedDate}
-                      onChange={(d) => {
-                        setSelectedDate(d);
-                        mainRef.current?.getApi().gotoDate(d);
-                      }}
-                    />
-                  </div>
-                  {tab === "filtros" && (
+        
+<div className="mt-4 rounded-2xl bg-white/5 border border-white/10 p-3">
+  <div className="text-[11px] font-black text-slate-200/80">Ir para dia</div>
+
+  <MiniCalendar
+  value={selectedDate}
+  onChange={(d) => {
+    setSelectedDate(d);
+    mainRef.current?.getApi().gotoDate(d);
+  }}
+/>
+
+</div>
+{tab === "filtros" && (
                     <div className="mt-3 space-y-3">
                       <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-3">
                         <div className="mb-2 text-xs font-extrabold text-slate-200">Período</div>
@@ -1036,6 +1209,7 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
                             />
                           </div>
                         </div>
+
                         <button
                           onClick={carregarPeriodoAtual}
                           className="mt-2 w-full rounded-xl bg-blue-600 hover:bg-blue-700 px-3 py-2 text-sm font-extrabold text-white"
@@ -1043,6 +1217,7 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
                           Aplicar período
                         </button>
                       </div>
+
                       {(mode === "admin" || mode === "professional") && (
                         <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-3">
                           <div className="mb-2 text-xs font-extrabold text-slate-200">Profissional</div>
@@ -1058,13 +1233,14 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
                               </option>
                             ))}
                           </select>
+
                           {mode === "professional" && defaultProfessional ? (
-                            <div className="mt-2 text-xs text-slate-400">
-                              Vinculado em: <b className="text-slate-200">{defaultProfessional}</b>
-                            </div>
+                            <div className="mt-2 text-xs text-slate-400">Vinculado em: <b className="text-slate-200">{defaultProfessional}</b></div>
                           ) : null}
+
                         </div>
                       )}
+
                       <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-3">
                         <div className="mb-2 text-xs font-extrabold text-slate-200">Status</div>
                         <select
@@ -1079,6 +1255,7 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
                           ))}
                         </select>
                       </div>
+
                       <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-3">
                         <div className="mb-2 text-xs font-extrabold text-slate-200">Buscar</div>
                         <input
@@ -1090,16 +1267,11 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
                       </div>
                     </div>
                   )}
+
                   {tab === "status" && (
                     <div className="mt-3 rounded-2xl border border-white/10 bg-slate-950/40 p-3">
                       <div className="text-xs font-extrabold text-slate-200 mb-2">Legenda</div>
-                      {[
-                        "Confirmado",
-                        "Não Confirmado",
-                        "Desmarcado",
-                        "Atendido pelo Medico",
-                        "Bloqueado",
-                      ].map((s) => (
+                      {["Confirmado", "Não Confirmado", "Desmarcado", "Atendido pelo Medico", "Bloqueado"].map((s) => (
                         <div key={s} className="flex items-center gap-2 py-1 text-xs text-slate-300">
                           <span className="h-3 w-3 rounded-full" style={{ background: statusColorNormalized(s) }} />
                           <span className="font-extrabold">{s}</span>
@@ -1109,6 +1281,7 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
                   )}
                 </div>
               </aside>
+
               <section className="col-span-12 lg:col-span-9">
                 <div className="rounded-[28px] bg-slate-950/35 border border-white/10 p-4">
                   <div className="mb-3 flex items-baseline justify-between">
@@ -1117,29 +1290,28 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
                     </div>
                     <div className="text-xs text-slate-400">{mode === "admin" ? "Admin view" : "Professional view"}</div>
                   </div>
-                  {/*
-                   * Reduce the calendar height from 76vh to 70vh.  This makes the
-                   * interface less vertically stretched and should eliminate
-                   * vertical scrolling on most displays.  The width remains
-                   * full and we allow horizontal overflow to scroll if
-                   * necessary.
-                   */}
-                  <div className="h-[70vh] w-full overflow-x-auto">
+
+                  <div className="h-[76vh] w-full overflow-x-auto">
                     <FullCalendar
                       ref={mainRef as any}
                       datesSet={(info) => {
-                        // Align fetch to the currently visible month
-                        const base = info.start ?? new Date();
-                        const di = startOfMonthISO(base);
-                        const df = endOfMonthISO(base);
-                        setSelectedDate(new Date(base.getFullYear(), base.getMonth(), base.getDate()));
-                        setDatai(di);
-                        setDataf(df);
-                        // Clear cache and prefetch the month
-                        setChunks({});
-                        setRaw([]);
-                        prefetchRangeInChunks(di, df);
-                      }}
+  // 📆 Alinha fetch ao MÊS visível
+  const base = info.start ?? new Date();
+  const di = startOfMonthISO(base);
+  const df = endOfMonthISO(base);
+
+  setSelectedDate(new Date(base.getFullYear(), base.getMonth(), base.getDate()));
+  setDatai(di);
+  setDataf(df);
+
+  // limpa cache e refaz prefetch do mês
+  setChunks({});
+  setRaw([]);
+  prefetchRangeInChunks(di, df);
+}}
+
+
+
                       plugins={[timeGridPlugin, interactionPlugin]}
                       initialView="timeGridDay"
                       height="100%"
@@ -1147,23 +1319,31 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
                       nowIndicator
                       slotMinTime="06:00:00"
                       slotMaxTime="21:00:00"
+
+                      // ✅ 30 min
                       slotDuration="00:30:00"
+
+                      
                       slotEventOverlap={false}
                       eventOverlap={false}
-                      allDaySlot={false}
+allDaySlot={false}
                       eventMinHeight={38}
                       headerToolbar={{ left: "prev,next today", center: "", right: "" }}
                       events={events as any}
                       eventContent={renderEventContent}
+
+                      // ✅ HOVER
                       eventMouseEnter={(info) => {
                         const ex: any = info.event.extendedProps || {};
                         const r = info.el.getBoundingClientRect();
+
                         const start = info.event.start
                           ? info.event.start.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
                           : "";
                         const end = info.event.end
                           ? info.event.end.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
                           : "";
+
                         setHover({
                           x: r.right,
                           y: r.top,
@@ -1171,10 +1351,12 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
                           profissional: ex.profissional || "-",
                           status: ex.status || "Não Confirmado",
                           inicio: start,
-                          fim: end,
+                          fim: endFinal,
                         });
                       }}
                       eventMouseLeave={() => setHover(null)}
+
+                      // ✅ CLICK: abre drawer (SEM nova aba)
                       eventClick={(info) => {
                         const ex: any = info.event.extendedProps || {};
                         const inicio = info.event.start
@@ -1183,11 +1365,20 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
                         const fim = info.event.end
                           ? info.event.end.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
                           : "";
-                        setDrawerData({ paciente: ex.paciente || "-", profissional: ex.profissional || "-", status: ex.status || "Não Confirmado", inicio, fim, raw: ex.raw });
+
+                        setDrawerData({
+                          paciente: ex.paciente || "-",
+                          profissional: ex.profissional || "-",
+                          status: ex.status || "Não Confirmado",
+                          inicio,
+                          fim,
+                          raw: ex.raw,
+                        });
                         setDrawerOpen(true);
                       }}
                     />
                   </div>
+
                   <div className="mt-3 rounded-2xl border border-white/10 bg-slate-950/40 p-3">
                     <div className="text-xs font-extrabold text-slate-200 mb-2">Resumo do dia (por status)</div>
                     <div className="flex flex-wrap gap-2">
@@ -1195,7 +1386,10 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
                         <div className="text-xs text-slate-500">Sem eventos no filtro atual.</div>
                       ) : (
                         summaryByStatus.map(([st, count]) => (
-                          <div key={st} className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-extrabold text-slate-200">
+                          <div
+                            key={st}
+                            className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-extrabold text-slate-200"
+                          >
                             <span className="h-2.5 w-2.5 rounded-full" style={{ background: statusColorNormalized(st) }} />
                             <span>{st}</span>
                             <span className="rounded-full bg-white/10 px-2 py-0.5">{count}</span>
@@ -1213,3 +1407,30 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
     </>
   );
 }
+
+// ==========================
+// 🧠 Konsist helpers (SAFE)
+// ==========================
+
+function konsistExtract(v: any): string {
+  if (!v) return "";
+  if (typeof v === "string") return v.trim();
+  if (typeof v === "number") return String(v);
+  if (typeof v === "object") {
+    if (typeof v.data === "string") return v.data.trim();
+    if (typeof v.hora === "string") return v.hora.trim();
+    if (typeof v.value === "string") return v.value.trim();
+  }
+  return "";
+}
+
+function konsistDateTime(x: any): string | null {
+  const d = konsistExtract(x?.agendamento_data);
+  const h = konsistExtract(x?.agendamento_hora);
+
+  if (!d) return null;
+
+  const time = h || "00:00";
+  return brToISO(`${d} ${time}`);
+}
+

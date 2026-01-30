@@ -3,7 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
 declare global {
-  // evita múltiplas instâncias no dev / Cloud Run
+  // evita múltiplas instâncias em dev / Cloud Run
   // eslint-disable-next-line no-var
   var prisma: PrismaClient | undefined;
 }
@@ -17,7 +17,10 @@ const adapter = new PrismaPg(pool);
 
 export const getPrisma = () => {
   if (!global.prisma) {
-    global.prisma = new PrismaClient({ adapter });
+    global.prisma = new PrismaClient({
+      adapter,
+    });
   }
+
   return global.prisma;
 };
