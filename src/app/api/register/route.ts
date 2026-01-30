@@ -1,50 +1,53 @@
-﻿import { NextResponse } from "next/server";
-import { getPrisma } from "@/lib/getPrisma";
+import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { getPrisma } from "@/lib/getPrisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
+    const prisma = getPrisma();
     const body = await req.json();
-    const { email, password, name } = body || {};
+
+    const { email, password, name } = body;
 
     if (!email || !password) {
       return NextResponse.json(
-        { error: "Dados inválidos" },
+        { error: "Email e senha são obrigatórios" },
         { status: 400 }
       );
     }
 
-    const prisma = getPrisma();
+    const normalizedEmail = email.toLowerCase();
 
-    const exists = await prisma.user.findUnique({
-      where: { email },
-    });
+   const existing = await prisma.user.findUnique({
+  where: { email: email.toLowerCase() },
+});
 
-    if (exists) {
-      return NextResponse.json(
-        { error: "Usuário já existe" },
-        { status: 409 }
-      );
-    }
+if (existing) {
+  return NextResponse.json(
+    { error: "Este email já está cadastrado. Faça login." },
+    { status: 409 }
+  );
+}
 
-    const hash = await bcrypt.hash(password, 10);
+const user = await prisma.user.create({
+  data: {
+    email: email.toLowerCase(),
+    name: name || null,
+    password: hashed,
+    status: "PENDING",
+    role: "PROFESSIONAL",
+  },
+});
 
-    await prisma.user.create({
-      data: {
-        email,
-        password: hash,
-        name: name || null,
-      },
-    });
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, userId: user.id });
   } catch (err) {
     console.error("REGISTER ERROR:", err);
     return NextResponse.json(
-      { error: "Erro interno" },
+      { error: "Erro interno ao registrar usuário" },
       { status: 500 }
     );
   }

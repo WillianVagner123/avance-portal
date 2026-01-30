@@ -70,7 +70,7 @@ import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "@/lib/prisma";
 
-export const authOptions: NextAuthOptions = {
+export const authConfig: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -194,8 +194,8 @@ export const authOptions: NextAuthOptions = {
 cat > "src/app/api/auth/[...nextauth]/route.ts" <<'EOF'
 export const runtime = "nodejs";
 import NextAuth from "next-auth";
-import { authOptions } from "@/lib/auth";
-const handler = NextAuth(authOptions);
+import { authConfig } from "@/lib/auth";
+const handler = NextAuth(authConfig);
 export { handler as GET, handler as POST };
 step "[6] APIs Google"
 cat > src/app/api/google/calendars/route.ts <<'EOF'
@@ -203,12 +203,12 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authConfig } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { google } from "googleapis";
 
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authConfig);
   const appUser = (session as any)?.appUser;
 
   if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -243,11 +243,11 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authConfig } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authConfig);
   const appUser = (session as any)?.appUser;
 
   if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -275,11 +275,11 @@ cat > src/app/settings/calendar/page.tsx <<'EOF'
 export const runtime = "nodejs";
 
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authConfig } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
 export default async function SettingsCalendarPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authConfig);
   const appUser = (session as any)?.appUser;
 
   if (!session?.user?.email) redirect("/login");
@@ -484,11 +484,11 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authConfig } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authConfig);
   const role = (session as any)?.appUser?.role;
   const actorEmail = (session?.user?.email || "").toLowerCase();
 
@@ -522,11 +522,11 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authConfig } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authConfig);
   const role = (session as any)?.appUser?.role;
   const actorEmail = (session?.user?.email || "").toLowerCase();
 

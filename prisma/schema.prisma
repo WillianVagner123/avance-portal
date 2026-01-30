@@ -138,6 +138,9 @@ model PasswordResetToken {
 
   user User @relation(fields: [userId], references: [id])
 
+  @@index([userId])
+}
+
 model KonsistAppointmentLink {
   id String @id @default(cuid())
 

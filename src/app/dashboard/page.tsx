@@ -1,8 +1,7 @@
-export const runtime = "nodejs";
-
+import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
+export const runtime = "nodejs";
 
 export default async function DashboardPage() {
   const session: any = await getServerSession(authOptions);

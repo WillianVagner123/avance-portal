@@ -1,12 +1,11 @@
 export const runtime = "nodejs";
-
-import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import SyncClient from "./SyncClient";
 
 export default async function SettingsCalendarPage() {
-  const session = await getServerSession(authOptions);
+  const session: any = await getServerSession(authOptions);
   const appUser = (session as any)?.appUser;
 
   if (!session?.user?.email) redirect("/login");

@@ -1,8 +1,9 @@
 export const runtime = "nodejs";
 
+import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
+
 
 type SP = { searchParams?: Record<string, string | string[] | undefined> };
 

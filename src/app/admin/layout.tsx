@@ -1,12 +1,11 @@
-export const runtime = "nodejs";
-
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+
 import { redirect } from "next/navigation";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerSession(authOptions);
-  const role = (session as any)?.appUser?.role;
+  const session: any = await getServerSession(authOptions);
+  const role = session?.appUser?.role;
 
   if (!session?.user?.email) redirect("/login");
   if (role !== "MASTER") redirect("/");
