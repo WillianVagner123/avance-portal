@@ -1,5 +1,42 @@
 "use client";
 
+const isPlainEmptyObject = (v) =>
+  v && typeof v === "object" && !Array.isArray(v) && Object.keys(v).length === 0;
+
+const toStr = (v) => {
+  if (v == null) return "";
+  if (typeof v === "string") return v.trim();
+  if (typeof v === "number") return String(v);
+  if (v instanceof Date && !isNaN(v.getTime())) return v.toISOString();
+  if (typeof v === "object") {
+    for (const k of ["data", "hora", "value", "date", "time", "datetime", "text"]) {
+      if (typeof v[k] === "string") return String(v[k]).trim();
+    }
+  }
+  return "";
+};
+
+const buildStartISOFromItem = (x) => {
+  const d1 = isPlainEmptyObject(x?.agendamento_data) ? "" : toStr(x?.agendamento_data);
+  const h1 = isPlainEmptyObject(x?.agendamento_hora) ? "" : toStr(x?.agendamento_hora);
+
+  const rawAg = Array.isArray(x?.raw?.agendamento) ? x.raw.agendamento : [];
+  const first = rawAg[0] || null;
+  const d2 = first ? toStr(first.agendamento_data) : "";
+  const h2 = first ? toStr(first.agendamento_hora) : "";
+
+  const data = d1 || d2;
+  const hora = h1 || h2;
+
+  if (!data) return { startISO: null };
+
+  const dateISO = data.slice(0, 10);
+  if (!hora) return { startISO: dateISO };
+
+  const hhmm = /^\d{1,2}:\d{2}$/.test(hora) ? hora.padStart(5, "0") : hora;
+  return { startISO: dateISO + "T" + hhmm + ":00" };
+};
+
 // Utility function for building class names. Accepts any number of arguments and
 // filters out falsy values before joining them with a single space. This
 // pattern avoids conditional string concatenation throughout the UI and
@@ -418,6 +455,33 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [raw, setRaw] = useState<KonsistItem[]>([]);
+
+  // Flatten the raw Konsist data into a list of individual appointments.  The Konsist API can
+  // return an array of patient records, each containing an `agendamento` array of
+  // appointments.  To simplify downstream processing we normalise this nested structure
+  // into a flat array.  Each entry in the returned array contains the appointment fields
+  // along with patient-level details (paciente, telefone, idpaciente).
+  const flattenedRaw = useMemo(() => {
+    const out: any[] = [];
+    (Array.isArray(raw) ? raw : []).forEach((record: any) => {
+      if (record && Array.isArray((record as any).agendamento)) {
+        (record as any).agendamento.forEach((ag: any, idx: number) => {
+          out.push({
+            ...ag,
+            paciente: (record as any)?.paciente ?? (record as any)?.nomepaciente ?? (record as any)?.Paciente ?? (record as any)?.paciente_nome ?? "",
+            telefone: (record as any)?.telefone ?? (record as any)?.contato ?? "",
+            idpaciente: (record as any)?.idpaciente ?? (record as any)?.pacienteId ?? (record as any)?.idpaciente ?? idx,
+          });
+        });
+      } else {
+        // If the item does not have an agendamento array, push it as-is.  This preserves
+        // backwards compatibility with earlier API formats where each item represented a
+        // single appointment.
+        out.push(record);
+      }
+    });
+    return out;
+  }, [raw]);
   const [prof, setProf] = useState<string>("ALL");
   const [status, setStatus] = useState<string>("ALL");
   const [search, setSearch] = useState<string>("");
@@ -619,34 +683,39 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
 
   const professionals = useMemo(() => {
     const set = new Set<string>();
-    (Array.isArray(raw) ? raw : []).forEach((x) => {
+    flattenedRaw.forEach((x) => {
       const p =
-        x?.agendamento_medico ||
-        x?.profissional ||
-        x?.profissional_nome ||
-        x?.profissionalNome ||
-        x?.medico ||
-        x?.nutricionista ||
-        x?.nome_medico ||
-        x?.nomeProfissional;
+        (x as any)?.agendamento_medico ||
+        (x as any)?.profissional ||
+        (x as any)?.profissional_nome ||
+        (x as any)?.profissionalNome ||
+        (x as any)?.medico ||
+        (x as any)?.nutricionista ||
+        (x as any)?.nome_medico ||
+        (x as any)?.nomeProfissional;
       if (p) set.add(String(p));
     });
     return ["ALL", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
-  }, [raw]);
+  }, [flattenedRaw]);
 
   const statuses = useMemo(() => {
     const set = new Set<string>();
-    (Array.isArray(raw) ? raw : []).forEach((x) => {
-      const s = x?.agendamento_status ?? x?.status ?? x?.situacao ?? x?.status_nome ?? x?.statusNome;
+    flattenedRaw.forEach((x) => {
+      const s =
+        (x as any)?.agendamento_status ??
+        (x as any)?.status ??
+        (x as any)?.situacao ??
+        (x as any)?.status_nome ??
+        (x as any)?.statusNome;
       const norm = normalizeStatus(s);
       if (norm) set.add(norm);
     });
     return ["ALL", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
-  }, [raw]);
+  }, [flattenedRaw]);
 
   const filtered = useMemo(() => {
     const q = (search || "").toLowerCase().trim();
-    return (Array.isArray(raw) ? raw : []).filter((x) => {
+    return flattenedRaw.filter((x) => {
       const pRaw = String(
         x?.agendamento_medico || x?.profissional || x?.profissional_nome || x?.profissionalNome || x?.medico || ""
       );
@@ -661,7 +730,7 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
       }
       return true;
     });
-  }, [raw, prof, status, search]);
+  }, [flattenedRaw, prof, status, search]);
 
   const events = useMemo(() => {
     // Build the event list from the filtered Konsist data.  We need to be
@@ -679,9 +748,30 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
       ).trim() || "-";
       const stRaw = x?.agendamento_status ?? x?.status ?? x?.situacao ?? "";
       const st = normalizeStatus(stRaw);
-      // safely extract date and time strings
-      const dateStr = extractValue(x?.agendamento_data);
-      const timeStr = extractValue(x?.agendamento_hora);
+      // safely extract date and time strings.  The Konsist API may return
+      // these values either as plain strings or as nested objects.  When
+      // agendamento_data/agendamento_hora are provided as strings we
+      // simply trim them.  If they come in Brazilian format (DD/MM/YYYY)
+      // we convert them to ISO using brToISO.  We avoid treating them
+      // like objects here because in practice Konsist returns plain
+      // strings and the previous implementation attempting to walk
+      // object keys was causing the date to be lost.  If no date can
+      // be resolved the event is skipped.
+      let dateStrRaw: any = x?.agendamento_data;
+      let timeStrRaw: any = x?.agendamento_hora;
+      // fallback to alternate property names when available
+      if (!dateStrRaw && x && typeof x === "object") {
+        dateStrRaw = (x as any).data ?? (x as any).agendamentoData ?? null;
+      }
+      if (!timeStrRaw && x && typeof x === "object") {
+        timeStrRaw = (x as any).hora ?? (x as any).agendamentoHora ?? null;
+      }
+      let dateStr: string | null = dateStrRaw ? String(dateStrRaw).trim() : null;
+      let timeStr: string | null = timeStrRaw ? String(timeStrRaw).trim() : null;
+      // Convert Brazilian date format (DD/MM/YYYY) to ISO (YYYY-MM-DD)
+      if (dateStr && dateStr.includes("/")) {
+        dateStr = brToISO(dateStr);
+      }
       // require at least a valid date; time is optional
       if (!dateStr) {
         console.warn("⛔ Agendamento sem data:", x);
@@ -714,7 +804,14 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
       const title = mode === "admin" ? `${paciente} • ${profNome}` : `${paciente}`;
       const color = statusColorNormalized(st);
       out.push({
-        id: String(x?.id || x?.idagendamento || x?.agendamento_chave || idx),
+        id: String(
+          x?.id ||
+            x?.idagendamento ||
+            x?.agendamento_chave ||
+            x?.agendamento_chave ||
+            x?.idpaciente ||
+            idx
+        ),
         title,
         start: startStr,
         end: endStr,
