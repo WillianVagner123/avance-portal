@@ -1,7 +1,9 @@
-name: Apply updated_project.zip into repository
 
 on:
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   apply-zip:
