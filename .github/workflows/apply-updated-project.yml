@@ -1,0 +1,54 @@
+name: Apply updated_project.zip into repository
+
+on:
+  workflow_dispatch:
+
+jobs:
+  apply-zip:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Show repository root
+        run: ls -la
+
+      - name: Prepare temp directory
+        run: |
+          rm -rf /tmp/updated_project
+          mkdir -p /tmp/updated_project
+
+      - name: Unzip updated_project.zip
+        run: |
+          unzip -o updated_project.zip -d /tmp/updated_project
+          echo "ZIP content:"
+          ls -la /tmp/updated_project
+
+      # 🔴 AJUSTE IMPORTANTE AQUI
+      # Esse step copia SOMENTE os arquivos de código,
+      # evitando sobrescrever configs, .env, etc.
+      - name: Apply calendar updates
+        run: |
+          if [ -d "/tmp/updated_project/src" ]; then
+            echo "Copiando src/components/calendar"
+            cp -R /tmp/updated_project/src/components/calendar src/components/
+          else
+            echo "❌ Estrutura inesperada no ZIP"
+            exit 1
+          fi
+
+      - name: Git status
+        run: git status
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add src/components/calendar
+          git commit -m "chore(calendar): aplica correções via updated_project.zip" || echo "Nada para commitar"
+
+      - name: Push changes
+        run: git push origin main
