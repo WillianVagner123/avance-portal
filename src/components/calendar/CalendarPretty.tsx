@@ -184,33 +184,6 @@ function normalizeStatus(s: any) {
   return "Não Confirmado";
 }
 
-// Safely extract a string from Konsist date/time objects.
-// The Konsist API can return fields like { data: '01/02/2024' } or { hora: '13:30' }
-// instead of plain strings.  This helper inspects a value and attempts to
-// extract a reasonable string.  It checks some preferred keys (data, hora,
-// value, date, time) first, then falls back to the first string property if
-// available.  When nothing can be resolved the provided fallback (or null)
-// is returned.
-function extractValue(value: any, fallback: string | null = null): string | null {
-  if (!value) return fallback;
-  if (typeof value === "string") return value.trim();
-  if (typeof value === "number") return String(value);
-  if (typeof value === "object") {
-    const preferredKeys = ["data", "hora", "value", "date", "time"];
-    for (const key of preferredKeys) {
-      if (key in (value as any) && typeof (value as any)[key] === "string") {
-        return ((value as any)[key] as string).trim();
-      }
-    }
-    // fallback: pick the first string property
-    for (const k of Object.keys(value)) {
-      const v = (value as any)[k];
-      if (typeof v === "string") return v.trim();
-    }
-  }
-  return fallback;
-}
-
 // ✅ Cor por status NORMALIZADO
 function statusColorNormalized(norm: string) {
   switch (norm) {
@@ -468,20 +441,6 @@ const mainRef = useRef<FullCalendar | null>(null);
 
   const [defaultProfessional, setDefaultProfessional] = useState<string | undefined>(undefined);
 
-  // sessão / google
-  const [appUser, setAppUser] = useState<any>(null);
-  const [proReq, setProReq] = useState<any>(null);
-
-  // pedido de vínculo
-  const [prosList, setProsList] = useState<string[]>([]);
-  const [requestProf, setRequestProf] = useState<string>("");
-  const [requesting, setRequesting] = useState(false);
-  const [reqMsg, setReqMsg] = useState<string>("");
-
-  // sync manual
-  const [syncing, setSyncing] = useState(false);
-  const [syncMsg, setSyncMsg] = useState<string>("");
-
   // ✅ PROFESSIONAL: carrega ultimo filtro salvo e tenta vincular pelo session
   useEffect(() => {
     if (mode !== "professional") return;
@@ -494,76 +453,14 @@ const mainRef = useRef<FullCalendar | null>(null);
     fetch("/api/auth/session")
       .then((r) => (r.ok ? r.json() : null))
       .then((s) => {
-        setAppUser(s?.appUser || null);
-        setProReq(s?.appUser?.professionalLinkRequest || null);
-
-        const v = s?.appUser?.konsistMedicoNome || s?.user?.konsistMedicoNome;
+        const v = s?.user?.konsistMedicoNome;
         if (v) {
           setDefaultProfessional(v);
-          // no modo professional, sempre fixa no vínculo aprovado
-          setProf(v);
+          setProf((p0) => (p0 && p0 !== "ALL" ? p0 : v));
         }
       })
       .catch(() => {});
   }, [mode]);
-
-  // ✅ PROFESSIONAL: se ainda não tem vínculo, carrega lista de profissionais + status do pedido
-  useEffect(() => {
-    if (mode !== "professional") return;
-    if (defaultProfessional) return;
-
-    setReqMsg("");
-    fetch("/api/me/professional-link-request", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((j) => {
-        if (j?.ok) setProReq(j.latest || null);
-      })
-      .catch(() => {});
-
-    fetch("/api/konsist/professionals", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((j) => {
-        const list = Array.isArray(j?.professionals) ? j.professionals : [];
-        setProsList(list);
-        if (!requestProf && list.length) setRequestProf(list[0]);
-      })
-      .catch(() => {});
-  }, [mode, defaultProfessional, requestProf]);
-
-  async function requestProfessionalLink() {
-    setRequesting(true);
-    setReqMsg("");
-    try {
-      const r = await fetch("/api/me/professional-link-request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ requestedProfessional: requestProf }),
-      });
-      const j = await r.json().catch(() => ({}));
-      if (!r.ok || !j?.ok) throw new Error(j?.error || "Falha ao enviar solicitação");
-      setProReq(j.latest || null);
-      setReqMsg("✅ Solicitação enviada. Aguarde aprovação do admin.");
-    } catch (e: any) {
-      setReqMsg(`⚠️ ${e?.message || "Erro"}`);
-    } finally {
-      setRequesting(false);
-    }
-  }
-
-  async function syncGoogleNow() {
-    setSyncing(true);
-    setSyncMsg("");
-    try {
-      const r = await fetch("/api/google/sync-me", { method: "POST" });
-      const j = await r.json().catch(() => ({}));
-      if (!r.ok || !j?.ok) throw new Error(j?.error || "Falha ao sincronizar");
-      setSyncMsg(`✅ Sync OK. Itens: ${j.items} | Atualizados: ${j.upserted} | Removidos: ${j.deleted}`);
-    } catch (e: any) {
-      setSyncMsg(`⚠️ ${e?.message || "Erro"}`);
-    } finally {
-      setSyncing(false);
-    }
-  }
 
   // ✅ persistir escolha do profissional no modo professional
   useEffect(() => {
@@ -780,42 +677,20 @@ const mainRef = useRef<FullCalendar | null>(null);
       const stRaw = x?.agendamento_status ?? x?.status ?? x?.situacao ?? "";
       const st = normalizeStatus(stRaw);
 
-      // Safely extract date and time values.  Konsist may return nested objects
-      // (e.g. { data: '01/02/2024' } or { hora: '13:30' }) rather than plain
-      // strings.  Use extractValue to coerce these into strings when
-      // possible.  Fallback to empty string if nothing can be resolved.
-      const dRaw: any = x?.agendamento_data ?? (x as any)?.data ?? (x as any)?.agendamentoData;
-      const hRaw: any = x?.agendamento_hora ?? (x as any)?.hora ?? (x as any)?.agendamentoHora;
-      const d = extractValue(dRaw, "");
-      const h = extractValue(hRaw, "");
-
-      // Build a start ISO string: convert Brazilian (DD/MM/YYYY) or ISO date
-      // with optional time into a proper ISO local string.  If time is
-      // provided, include it; otherwise rely on the date only.  If no date
-      // could be extracted skip the event.
-      let start: any = null;
-      if (d) {
-        start = brToISO(h ? `${d} ${h}` : d);
-      }
+      const d = String(x?.agendamento_data || "").trim();
+      const h = String(x?.agendamento_hora || "").trim();
+      const start = brToISO(h ? `${d} ${h}` : d);
 
       if (!start || String(start).length < 10) continue;
 
-      // De‑duplicate events by patient, professional and start timestamp.
       const dedupeKey = `${paciente.toLowerCase()}|${profNome.toLowerCase()}|${String(start)}`;
       if (seen.has(dedupeKey)) continue;
       seen.add(dedupeKey);
 
-      // Determine end time.  Prefer explicit end fields if present.  If
-      // absent, default to 30 minutes after the start.  Use extractValue
-      // since the end fields may also be nested objects.
-      let endRaw: any = pickDateTime(x, [
-        "agendamento_fim",
-        "agendamento_hora_fim",
-        "agendamento_horaFim",
-        "agendamentoFim",
-      ]);
-      let end: any = brToISO(extractValue(endRaw, "") ?? "");
-      if ((!end || String(end).length < 10) && start) {
+      let end = pickDateTime(x, ["agendamento_fim", "agendamento_hora_fim", "agendamento_horaFim"]);
+      end = brToISO(end);
+
+      if (!end && start) {
         const dt = new Date(start);
         if (!isNaN(dt.getTime())) {
           dt.setMinutes(dt.getMinutes() + 30);
@@ -870,63 +745,6 @@ const mainRef = useRef<FullCalendar | null>(null);
     return Math.round((prog.done / prog.total) * 100);
   }, [prog]);
 
-  const needsProfessionalLink = mode === "professional" && !defaultProfessional;
-
-  if (needsProfessionalLink) {
-    return (
-      <div className="min-h-[calc(100vh-1px)] w-full bg-slate-950 text-slate-100">
-        <div className="mx-auto max-w-2xl p-4 sm:p-6">
-          <h1 className="text-xl font-black mb-2">Minha Agenda</h1>
-          <p className="text-sm text-slate-400 mb-4">
-            Para ver a agenda, você precisa vincular qual profissional do Konsist é você.
-          </p>
-
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="text-sm font-black mb-2">Status do vínculo</div>
-            {proReq?.status ? (
-              <div className="text-sm text-white/75 mb-3">
-                Solicitação: <b>{proReq.requestedProfessional}</b><br />
-                Status: <b>{proReq.status}</b>
-              </div>
-            ) : (
-              <div className="text-sm text-white/70 mb-3">Nenhuma solicitação enviada ainda.</div>
-            )}
-
-            <div className="grid gap-2">
-              <label className="text-xs text-white/70 font-extrabold">Escolha seu nome no Konsist</label>
-              <select
-                className="w-full rounded-xl bg-slate-950/50 border border-white/10 px-3 py-2 text-sm font-black"
-                value={requestProf}
-                onChange={(e) => setRequestProf(e.target.value)}
-              >
-                {prosList.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
-
-              <button
-                type="button"
-                onClick={requestProfessionalLink}
-                disabled={requesting || !requestProf}
-                className="mt-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-extrabold hover:bg-blue-700 disabled:opacity-50"
-              >
-                {requesting ? "Enviando…" : "Solicitar vínculo"}
-              </button>
-
-              {reqMsg ? <div className="text-sm mt-2">{reqMsg}</div> : null}
-
-              <div className="mt-3 text-xs text-white/60">
-                Dica: se você ainda não vinculou sua agenda Google, vá em <a className="underline" href="/settings/calendar">Configurações → Google Calendar</a>.
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <>
      <style jsx global>{`
@@ -972,19 +790,6 @@ const mainRef = useRef<FullCalendar | null>(null);
     cursor: pointer;
   }
 
-  /* Mobile: evita cortar a barra de ações */
-  @media (max-width: 640px) {
-    .fc .fc-header-toolbar {
-      flex-wrap: wrap !important;
-      gap: 10px !important;
-    }
-    .fc .fc-toolbar-chunk {
-      display: flex !important;
-      flex-wrap: wrap !important;
-      gap: 10px !important;
-    }
-  }
-
 `}</style>
 
       {hover && <HoverCard data={hover} />}
@@ -1023,20 +828,6 @@ const mainRef = useRef<FullCalendar | null>(null);
               >
                 {loading ? "Carregando..." : "Atualizar"}
               </button>
-
-              {mode === "professional" && appUser?.googleCalendar?.approved && appUser?.googleCalendar?.calendarId ? (
-                <button
-                  onClick={syncGoogleNow}
-                  className={cx(
-                    "rounded-full px-5 py-2.5 text-sm font-extrabold",
-                    "bg-emerald-600 hover:bg-emerald-700 text-white shadow-[0_16px_40px_rgba(16,185,129,.18)]",
-                    syncing && "opacity-70"
-                  )}
-                  disabled={syncing}
-                >
-                  {syncing ? "Sincronizando..." : "Sync Google"}
-                </button>
-              ) : null}
             </div>
           </div>
 
@@ -1046,12 +837,6 @@ const mainRef = useRef<FullCalendar | null>(null);
             percent={percent}
             sub={prog.current ? `Agora: ${prog.current}` : undefined}
           />
-
-          {syncMsg ? (
-            <div className="mb-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
-              {syncMsg}
-            </div>
-          ) : null}
 
           {error && (
             <div className="mb-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
@@ -1154,10 +939,9 @@ const mainRef = useRef<FullCalendar | null>(null);
                           <select
                             value={prof}
                             onChange={(e) => setProf(e.target.value)}
-                            disabled={mode === "professional"}
                             className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-2 py-2 text-sm text-slate-100"
                           >
-                            {(mode === "professional" && defaultProfessional ? [defaultProfessional] : professionals).map((p) => (
+                            {professionals.map((p) => (
                               <option key={p} value={p}>
                                 {p === "ALL" ? "Todos" : p}
                               </option>
@@ -1165,7 +949,13 @@ const mainRef = useRef<FullCalendar | null>(null);
                           </select>
 
                           {mode === "professional" && defaultProfessional ? (
-                            <div className="mt-2 text-xs text-slate-400">Vinculado em: <b className="text-slate-200">{defaultProfessional}</b></div>
+                            <button
+                              type="button"
+                              onClick={() => setProf(defaultProfessional)}
+                              className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-extrabold text-slate-100 hover:bg-white/10"
+                            >
+                              Sou eu (padrão)
+                            </button>
                           ) : null}
 
                         </div>
@@ -1221,17 +1011,7 @@ const mainRef = useRef<FullCalendar | null>(null);
                     <div className="text-xs text-slate-400">{mode === "admin" ? "Admin view" : "Professional view"}</div>
                   </div>
 
-                  {/*
-                    Adjust the calendar container height to reduce the need for
-                    vertical scrolling and provide sensible defaults across
-                    breakpoints.  On mobile devices (default) the calendar
-                    occupies around 60vh.  On small screens (≥640px) it grows
-                    to 70vh and on large screens (≥1024px via `lg:`) it
-                    matches the original 76vh.  The overflow-x-auto ensures
-                    horizontal scrolling when the time grid is wider than
-                    available space.
-                  */}
-                  <div className="h-[60vh] sm:h-[70vh] lg:h-[76vh] w-full overflow-x-auto">
+                  <div className="h-[76vh] w-full">
                     <FullCalendar
                       ref={mainRef as any}
                       datesSet={(info) => {
