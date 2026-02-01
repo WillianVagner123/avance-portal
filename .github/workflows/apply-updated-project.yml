@@ -30,15 +30,21 @@ jobs:
       # 🔴 AJUSTE IMPORTANTE AQUI
       # Esse step copia SOMENTE os arquivos de código,
       # evitando sobrescrever configs, .env, etc.
-      - name: Apply calendar updates
-        run: |
-          if [ -d "/tmp/updated_project/src" ]; then
-            echo "Copiando src/components/calendar"
-            cp -R /tmp/updated_project/src/components/calendar src/components/
-          else
-            echo "❌ Estrutura inesperada no ZIP"
-            exit 1
-          fi
+     - name: Apply calendar updates
+  run: |
+    echo "Procurando src/components/calendar dentro do ZIP..."
+    CALENDAR_DIR=$(find /tmp/updated_project -type d -path "*/src/components/calendar" | head -n 1)
+
+    if [ -z "$CALENDAR_DIR" ]; then
+      echo "❌ Não foi encontrado src/components/calendar no ZIP"
+      echo "Estrutura encontrada:"
+      find /tmp/updated_project -maxdepth 4 -type d
+      exit 1
+    fi
+
+    echo "Encontrado em: $CALENDAR_DIR"
+    cp -R "$CALENDAR_DIR" src/components/
+
 
       - name: Git status
         run: git status
