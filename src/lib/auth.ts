@@ -19,18 +19,25 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials.password) return null;
 
         const prisma = getPrisma();
+<<<<<<< HEAD
 
+=======
+>>>>>>> 0cbbd32 (fix: prisma client type and api routes)
         const user = await prisma.user.findUnique({
           where: { email: credentials.email.toLowerCase() },
         });
 
         if (!user || !user.password) return null;
 
+<<<<<<< HEAD
         const valid = await bcrypt.compare(
           credentials.password,
           user.password
         );
 
+=======
+        const valid = await bcrypt.compare(credentials.password, user.password);
+>>>>>>> 0cbbd32 (fix: prisma client type and api routes)
         if (!valid) return null;
 
         return {
@@ -61,6 +68,7 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+<<<<<<< HEAD
 
   session: {
     strategy: "jwt",
@@ -134,3 +142,29 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
   },
 };
+=======
+  callbacks: {
+  async jwt({ token, user }) {
+    // Quando o usuário loga pela primeira vez, guardamos o ID dele no Token
+    if (user) {
+      token.id = user.id;
+    }
+    return token;
+  },
+  async session({ session, token }) {
+    const prisma = getPrisma();
+    // Buscamos os dados atualizados do banco usando o ID fixo
+    const dbUser = await prisma.user.findUnique({
+      where: { id: token.id as string },
+    });
+
+    if (dbUser) {
+      (session as any).appUser = dbUser;
+    }
+    return session;
+  },
+}, // Chave de fechamento dos callbacks
+  session: { strategy: "jwt" },
+}; // Chave de fechamento das authOptions
+
+>>>>>>> 0cbbd32 (fix: prisma client type and api routes)
