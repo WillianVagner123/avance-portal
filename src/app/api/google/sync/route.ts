@@ -1,10 +1,16 @@
 ﻿import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getPrisma } from "@/lib/getPrisma";
+import { syncUserAgendaToGoogle } from "@/lib/syncToGoogle";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export async function GET() {
+export async function POST() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.appUser) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  await syncUserAgendaToGoogle(session.appUser.id);
+
   return NextResponse.json({ ok: true });
 }
