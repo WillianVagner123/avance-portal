@@ -184,6 +184,33 @@ function normalizeStatus(s: any) {
   return "Não Confirmado";
 }
 
+// Safely extract a string from Konsist date/time objects.
+// The Konsist API can return fields like { data: '01/02/2024' } or { hora: '13:30' }
+// instead of plain strings.  This helper inspects a value and attempts to
+// extract a reasonable string.  It checks some preferred keys (data, hora,
+// value, date, time) first, then falls back to the first string property if
+// available.  When nothing can be resolved the provided fallback (or null)
+// is returned.
+function extractValue(value: any, fallback: string | null = null): string | null {
+  if (!value) return fallback;
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "number") return String(value);
+  if (typeof value === "object") {
+    const preferredKeys = ["data", "hora", "value", "date", "time"];
+    for (const key of preferredKeys) {
+      if (key in (value as any) && typeof (value as any)[key] === "string") {
+        return ((value as any)[key] as string).trim();
+      }
+    }
+    // fallback: pick the first string property
+    for (const k of Object.keys(value)) {
+      const v = (value as any)[k];
+      if (typeof v === "string") return v.trim();
+    }
+  }
+  return fallback;
+}
+
 // ✅ Cor por status NORMALIZADO
 function statusColorNormalized(norm: string) {
   switch (norm) {
@@ -753,20 +780,42 @@ const mainRef = useRef<FullCalendar | null>(null);
       const stRaw = x?.agendamento_status ?? x?.status ?? x?.situacao ?? "";
       const st = normalizeStatus(stRaw);
 
-      const d = String(x?.agendamento_data || "").trim();
-      const h = String(x?.agendamento_hora || "").trim();
-      const start = brToISO(h ? `${d} ${h}` : d);
+      // Safely extract date and time values.  Konsist may return nested objects
+      // (e.g. { data: '01/02/2024' } or { hora: '13:30' }) rather than plain
+      // strings.  Use extractValue to coerce these into strings when
+      // possible.  Fallback to empty string if nothing can be resolved.
+      const dRaw: any = x?.agendamento_data ?? (x as any)?.data ?? (x as any)?.agendamentoData;
+      const hRaw: any = x?.agendamento_hora ?? (x as any)?.hora ?? (x as any)?.agendamentoHora;
+      const d = extractValue(dRaw, "");
+      const h = extractValue(hRaw, "");
+
+      // Build a start ISO string: convert Brazilian (DD/MM/YYYY) or ISO date
+      // with optional time into a proper ISO local string.  If time is
+      // provided, include it; otherwise rely on the date only.  If no date
+      // could be extracted skip the event.
+      let start: any = null;
+      if (d) {
+        start = brToISO(h ? `${d} ${h}` : d);
+      }
 
       if (!start || String(start).length < 10) continue;
 
+      // De‑duplicate events by patient, professional and start timestamp.
       const dedupeKey = `${paciente.toLowerCase()}|${profNome.toLowerCase()}|${String(start)}`;
       if (seen.has(dedupeKey)) continue;
       seen.add(dedupeKey);
 
-      let end = pickDateTime(x, ["agendamento_fim", "agendamento_hora_fim", "agendamento_horaFim"]);
-      end = brToISO(end);
-
-      if (!end && start) {
+      // Determine end time.  Prefer explicit end fields if present.  If
+      // absent, default to 30 minutes after the start.  Use extractValue
+      // since the end fields may also be nested objects.
+      let endRaw: any = pickDateTime(x, [
+        "agendamento_fim",
+        "agendamento_hora_fim",
+        "agendamento_horaFim",
+        "agendamentoFim",
+      ]);
+      let end: any = brToISO(extractValue(endRaw, "") ?? "");
+      if ((!end || String(end).length < 10) && start) {
         const dt = new Date(start);
         if (!isNaN(dt.getTime())) {
           dt.setMinutes(dt.getMinutes() + 30);
@@ -1172,7 +1221,17 @@ const mainRef = useRef<FullCalendar | null>(null);
                     <div className="text-xs text-slate-400">{mode === "admin" ? "Admin view" : "Professional view"}</div>
                   </div>
 
-                  <div className="h-[76vh] w-full overflow-x-auto">
+                  {/*
+                    Adjust the calendar container height to reduce the need for
+                    vertical scrolling and provide sensible defaults across
+                    breakpoints.  On mobile devices (default) the calendar
+                    occupies around 60vh.  On small screens (≥640px) it grows
+                    to 70vh and on large screens (≥1024px via `lg:`) it
+                    matches the original 76vh.  The overflow-x-auto ensures
+                    horizontal scrolling when the time grid is wider than
+                    available space.
+                  */}
+                  <div className="h-[60vh] sm:h-[70vh] lg:h-[76vh] w-full overflow-x-auto">
                     <FullCalendar
                       ref={mainRef as any}
                       datesSet={(info) => {
