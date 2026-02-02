@@ -1,24 +1,33 @@
 FROM node:20-slim
 
+# Instalar OpenSSL (necessário para o Prisma rodar no ambiente slim)
+RUN apt-get update -y && apt-get install -y openssl
+
 WORKDIR /app
-# Copia os arquivos de dependências
+
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# 1. Remova o ENV NODE_ENV=production daqui ou mude para development temporariamente
-# Isso garante que o Tailwind e o Next.js (devDependencies) sejam instalados
+# Instalamos tudo (incluindo devDependencies para o build)
 RUN npm ci
 
 COPY . .
 
-# 2. Gera o client do Prisma (necessário para o build do Next)
+# Gera o client do Prisma
 RUN npx prisma generate
 
-# 3. Agora o build vai encontrar o Tailwind
+# Roda o build do Next.js
 RUN npm run build
 
-# 4. Agora sim, definimos produção para a execução
+# --- CONFIGURAÇÃO PARA O CLOUD RUN ---
 ENV NODE_ENV=production
+# O Next.js precisa do HOSTNAME 0.0.0.0 para aceitar conexões externas no container
+ENV HOSTNAME="0.0.0.0"
+# Garantimos que a porta seja a 8080 (padrão do Cloud Run)
+ENV PORT=8080
 
 EXPOSE 8080
-CMD ["npm", "start"]
+
+# Usamos 'npx next start' para garantir que ele ignore o script do package.json 
+# e use as variáveis de ambiente corretas
+CMD ["npx", "next", "start", "-p", "8080"]
