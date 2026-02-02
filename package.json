@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.20",
+    "tailwindcss": "^4.1.18",
     "@fullcalendar/daygrid": "^6.1.20",
     "@fullcalendar/interaction": "^6.1.20",
     "@fullcalendar/react": "^6.1.20",
