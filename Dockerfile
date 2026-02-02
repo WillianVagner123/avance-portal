@@ -18,16 +18,13 @@ RUN npx prisma generate
 
 # Roda o build do Next.js
 RUN npm run build
-
-# --- CONFIGURAÇÃO PARA O CLOUD RUN ---
+# --- CONFIGURAÇÃO PARA O CLOUD RUN (PORTA 3000) ---
 ENV NODE_ENV=production
-# O Next.js precisa do HOSTNAME 0.0.0.0 para aceitar conexões externas no container
 ENV HOSTNAME="0.0.0.0"
-# Garantimos que a porta seja a 8080 (padrão do Cloud Run)
-ENV PORT=8080
+ENV PORT=3000
 
-EXPOSE 8080
+# Exponha a porta que o Google está pedindo
+EXPOSE 3000
 
-# Usamos 'npx next start' para garantir que ele ignore o script do package.json 
-# e use as variáveis de ambiente corretas
-CMD ["npx", "next", "start", "-p", "8080"]
+# Force o Next.js a rodar na 3000
+CMD ["npx", "next", "start", "-p", "3000"]
