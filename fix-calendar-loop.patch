@@ -1,0 +1,27 @@
+diff --git a/src/components/calendar/CalendarPretty.tsx b/src/components/calendar/CalendarPretty.tsx
+index 0000000..1111111 100644
+--- a/src/components/calendar/CalendarPretty.tsx
++++ b/src/components/calendar/CalendarPretty.tsx
+@@ -560,6 +560,7 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
+   const [drawerData, setDrawerData] = useState<DrawerData | null>(null);
+
+   // ✅ cache per window
++  const didAutoPrefetch = useRef(false);
+   const [chunks, setChunks] = useState<Record<string, KonsistItem[]>>({});
+
+   // ✅ progress state
+@@ -676,7 +677,13 @@ export default function CalendarPretty({ mode, title, subtitle }: Props) {
+
+   useEffect(() => {
+-    prefetch30DiasAuto();
++    if (didAutoPrefetch.current) return;
++    didAutoPrefetch.current = true;
++
++    prefetch30DiasAuto();
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, []);
++
++  useEffect(() => {
++    setChunks({});
++    setRaw([]);
++  }, [prof, status, search]);

@@ -31,6 +31,7 @@ if (existing) {
     { status: 409 }
   );
 }
+    const hashed = await bcrypt.hash(password, 10);
 
 const user = await prisma.user.create({
   data: {
