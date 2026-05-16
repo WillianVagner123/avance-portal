@@ -1,114 +1,91 @@
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { getPrisma } from "@/lib/getPrisma";
 import bcrypt from "bcryptjs";
 import type { NextAuthOptions } from "next-auth";
+import { findStaticUserByEmail } from "@/lib/staticUsers";
 
 /**
  * AUTH OPTIONS — AVANCE PORTAL
  * - JWT session
- * - Prisma user hydration
+ * - Login por email + senha sem depender de banco/Supabase
+ * - Usuários lidos de variáveis de ambiente/Secrets do deploy
  * - appUser disponível na session
- * - redirect direto para calendário
  */
 
-export const authOptions: NextAuthOptions = {
-  providers: [
-    // 🔹 Google OAuth
+const providers: NextAuthOptions["providers"] = [];
+
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  providers.push(
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    })
+  );
+}
 
-    // 🔹 Login com email + senha
-    CredentialsProvider({
-      name: "credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Senha", type: "password" },
-      },
+providers.push(
+  CredentialsProvider({
+    name: "credentials",
+    credentials: {
+      email: { label: "Email", type: "email" },
+      password: { label: "Senha", type: "password" },
+    },
 
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials.password) return null;
+    async authorize(credentials) {
+      if (!credentials?.email || !credentials.password) return null;
 
-        const prisma = getPrisma();
+      const user = findStaticUserByEmail(credentials.email);
+      if (!user?.passwordHash) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email.toLowerCase() },
-        });
+      const valid = await bcrypt.compare(credentials.password, user.passwordHash);
+      if (!valid) return null;
 
-        if (!user || !user.password) return null;
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name ?? undefined,
+      };
+    },
+  })
+);
 
-        const valid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
+export const authOptions: NextAuthOptions = {
+  providers,
 
-        if (!valid) return null;
-
-        // 🔹 Retorno mínimo (JWT será enriquecido depois)
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name ?? undefined,
-        };
-      },
-    }),
-  ],
-
-  // 🔐 Sessão via JWT
   session: {
     strategy: "jwt",
   },
 
   callbacks: {
-    /**
-     * JWT CALLBACK
-     * Executa:
-     * - no login
-     * - em cada request autenticado
-     */
-    async jwt({ token }) {
-      if (!token?.email) return token;
+    async jwt({ token, user }) {
+      const email = (user?.email || token.email || "").toString().toLowerCase();
+      if (!email) return token;
 
-      const prisma = getPrisma();
+      const appUser = findStaticUserByEmail(email);
 
-      const user = await prisma.user.findUnique({
-        where: { email: token.email },
-      });
-
-      if (user) {
+      if (appUser) {
         token.appUser = {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          status: user.status,
+          id: appUser.id,
+          email: appUser.email,
+          name: appUser.name,
+          role: appUser.role,
+          status: appUser.status,
         };
       }
 
       return token;
     },
 
-    /**
-     * SESSION CALLBACK
-     * Exponibiliza appUser no frontend
-     */
     async session({ session, token }) {
       session.appUser = token.appUser as any;
       return session;
     },
 
-    /**
-     * REDIRECT CALLBACK
-     * Sempre cai direto no calendário
-     */
     async redirect({ baseUrl }) {
-      return `${baseUrl}/calendar`;
+      return `${baseUrl}/dashboard`;
     },
   },
 
-  // 🔹 Página customizada de login
   pages: {
     signIn: "/login",
   },
