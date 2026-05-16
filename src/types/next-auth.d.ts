@@ -1,25 +1,21 @@
 import NextAuth from "next-auth";
 
+type AppUser = {
+  id: string;
+  email: string;
+  name?: string | null;
+  role: string;
+  status?: string;
+};
+
 declare module "next-auth" {
   interface Session {
-    appUser?: {
-      id: string;
-      email: string;
-      name?: string | null;
-      role: "MASTER" | "PROFESSIONAL";
-      status?: string;
-    };
+    appUser?: AppUser;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
-    appUser?: {
-      id: string;
-      email: string;
-      name?: string | null;
-      role: "MASTER" | "PROFESSIONAL";
-      status?: string;
-    };
+    appUser?: AppUser;
   }
 }
