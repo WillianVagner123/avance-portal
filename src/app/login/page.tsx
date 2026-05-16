@@ -5,11 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 /**
- * LoginPage renders a credentials based login form.  Users enter their email
+ * LoginPage renders a credentials based login form. Users enter their email
  * and password and the form uses NextAuth to attempt a sign in via the
- * "credentials" provider.  On success it redirects to the dashboard,
- * otherwise it surfaces an error message.  The design retains the original
- * background and card aesthetic while being fully responsive for mobile.
+ * "credentials" provider. Accounts are now managed through environment
+ * variables/Secrets instead of a database-backed registration flow.
  */
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -20,9 +19,6 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const urlError = searchParams.get("error");
 
-  // Normalize any incoming NextAuth error query parameters into a human
-  // friendly message.  For example, when a session expires the user will
-  // be redirected to /login?error=SessionRequired.
   const deriveError = () => {
     if (errorMsg) return errorMsg;
     if (urlError === "CredentialsSignin") {
@@ -46,7 +42,6 @@ export default function LoginPage() {
     });
     setSubmitting(false);
     if (res?.ok) {
-      // Navigate to the dashboard on success.
       router.push("/dashboard");
     } else {
       setErrorMsg("Credenciais inválidas. Verifique seu email e senha.");
@@ -55,7 +50,6 @@ export default function LoginPage() {
 
   return (
     <main className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Fundo com imagem */}
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
@@ -64,10 +58,8 @@ export default function LoginPage() {
         }}
       />
 
-      {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/90" />
 
-      {/* Card */}
       <div className="relative z-10 w-full max-w-sm rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl p-8">
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 text-xl font-bold text-white">
@@ -118,10 +110,7 @@ export default function LoginPage() {
             {submitting ? "Entrando..." : "Entrar"}
           </button>
           <p className="text-center text-xs text-zinc-400">
-            Não possui conta?{' '}
-            <a href="/register" className="underline hover:text-white">
-              Registrar
-            </a>
+            Acesso liberado apenas para usuários cadastrados pelo administrador.
           </p>
         </form>
       </div>
