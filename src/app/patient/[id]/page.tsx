@@ -1,10 +1,5 @@
 export const runtime = "nodejs";
 
-import { authOptions } from "@/lib/auth";
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
-
-
 type SP = { searchParams?: Record<string, string | string[] | undefined> };
 
 function spStr(v: any) {
@@ -13,13 +8,6 @@ function spStr(v: any) {
 }
 
 export default async function PatientPage({ searchParams }: SP) {
-  const session: any = await getServerSession(authOptions);
-
-  if (!session?.user?.email) redirect("/login");
-
-  const appUser = session?.appUser;
-  if (appUser?.status !== "ACTIVE") redirect("/pending");
-
   const nome = spStr(searchParams?.nome);
   const profissional = spStr(searchParams?.prof);
   const status = spStr(searchParams?.st);
